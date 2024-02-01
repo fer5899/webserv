@@ -62,7 +62,7 @@ USER := $(shell whoami)
 GITIGNORE = .gitignore
 
 $(GITIGNORE):
-	@echo ".*\n*.out\n*.o\n*.a\n*.dSYM" > .gitignore
+	@echo ".*\n*.out\n*.o\n*.a\n*.dSYM\n!.gitignore" > .gitignore
 	@echo "$(GREEN)Creating:$(DEFAULT) Gitignore."
 
 git: clean $(GITIGNORE)

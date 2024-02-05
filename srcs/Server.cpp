@@ -38,40 +38,54 @@ int main()
 	
 	while (1)
 	{
-		int new_socket;
+      fd_set read_fds;
+      FD_ZERO(&read_fds);
+      FD_SET(server_fd, &read_fds);
 
-		if ((new_socket = accept(server_fd, (struct sockaddr *)NULL, NULL)) < 0)
-		{
-			std::cerr << "Accept failed" << std::endl;
-			return 1;
-		}
+      if(select(server_fd + 1, &read_fds, NULL, NULL, NULL) < 0)
+	   {
+		   std::cerr << "Select failed" << std::endl;
+		   return 1;
+	   }
 
-		std::string httpRequest;
+    	if (FD_ISSET(server_fd, &read_fds))
+      {
+		
+			int new_socket;
 
-		while (true) 
-		{
-			char buffer[BUFFER_SIZE];
-			ssize_t bytesRead = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
-			if (bytesRead == -1)
+			if ((new_socket = accept(server_fd, (struct sockaddr *)NULL, NULL)) < 0)
 			{
-				std::cerr << "Error reading from socket" << std::endl;
+				std::cerr << "Accept failed" << std::endl;
+				return 1;
+			}
+
+			std::string httpRequest;
+
+			while (true) 
+			{
+				char buffer[BUFFER_SIZE];
+				ssize_t bytesRead = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
+				if (bytesRead == -1)
+				{
+					std::cerr << "Error reading from socket" << std::endl;
+					close(new_socket);
+					break;
+				}
+
+				buffer[bytesRead] = '\0';
+				httpRequest += buffer;
+
+				if (bytesRead < BUFFER_SIZE - 1) {
+					std::cout << "Received complete HTTP Request:\n" << httpRequest << std::endl;
+
+					const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello, World!";
+					send(new_socket, response, strlen(response), 0);
+
+					break;
+				}
+
 				close(new_socket);
-				break;
 			}
-
-			buffer[bytesRead] = '\0';
-			httpRequest += buffer;
-
-			if (bytesRead < BUFFER_SIZE - 1) {
-				std::cout << "Received complete HTTP Request:\n" << httpRequest << std::endl;
-
-				const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello, World!";
-				send(new_socket, response, strlen(response), 0);
-
-				break;
-			}
-
-			close(new_socket);
 		}
 	}
     return 0;

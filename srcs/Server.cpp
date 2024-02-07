@@ -6,6 +6,8 @@
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+
 
 #define BUFFER_SIZE 100
 
@@ -24,6 +26,21 @@ int main()
 	// Forcefully attaching socket to the port 4242
 	int opt = 1;
 	setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+		
+	int flags = fcntl(server_socket, F_SETFL, O_NONBLOCK, FD_CLOEXEC);	// Add non-blocking flag and set close-on-exec flag, how the subject says
+	if (flags == -1)
+	{
+		std::cerr << "Fcntl error" << std::endl;
+		return 1;
+	}
+	// flags = fcntl(server_socket, F_SETFD, FD_CLOEXEC);	// Set close-on-exec flag, how it should be
+	// if (flags == -1)
+	// {
+	// 	std::cerr << "Fcntl error" << std::endl;
+	// 	return 1;
+	// }
+
 
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
@@ -157,6 +174,7 @@ int main()
 						std::cout << "Data sent" << std::endl;
 						close(i);
 						FD_CLR(i, &write_sockets);
+						// FD_SET(i, &read_sockets);
 						std::cout << "Connection closed" << std::endl;
 					}
 				}

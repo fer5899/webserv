@@ -15,13 +15,13 @@ void ConnectionManager::setUpServers()
 	{
 		it->setUpServer();
 	}
-	this->initSets();
 }
 
 void ConnectionManager::runServers()
 {
 	fd_set read_sockets_copy, write_sockets_copy;
-	
+
+	this->initSets();
 	std::cout << "Running servers: waiting for connections..." << std::endl;
 	
 	while (1)
@@ -123,14 +123,6 @@ void ConnectionManager::runServers()
 					std::cout << "Connection closed" << std::endl;
 				}
 			}
-			//Error on client sockets
-			// right now I'm not sure when and where I should add the socket to the error set
-			// else if (FD_ISSET(i, &error_sockets_copy))
-			// {
-			// 	std::cerr << "Error on client socket: " << strerror(errno) << std::endl;
-			// 	close(i);
-			// 	FD_CLR(i, &this->_error_sockets);
-			// }
 		}
 		
 	}

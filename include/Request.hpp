@@ -21,7 +21,8 @@ class Request
 {
 	private:
 		std::string 										raw_request;
-		std::string											url;
+		std::string											path;
+		std::map<std::string, std::string>					query_params;
 		std::map<std::string, std::string>					headers;
 		std::vector<std::map<std::string, std::string> >	body;
 		int													method;
@@ -36,7 +37,8 @@ class Request
 		int						getMethod();
 		std::map<std::string, std::string>	getHeaders();
 		std::vector<std::map<std::string, std::string> >	getBody();
-		std::string	getUrl();
+		std::string	getPath();
+		std::string	getQueryParams();
 
 };
 

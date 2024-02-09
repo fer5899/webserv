@@ -73,6 +73,9 @@ git: clean $(GITIGNORE)
 	@git push
 	@echo "$(BOLD)$(GREEN)Git:$(WHITE) Pushing all changes.$(DEFAULT)"
 
+main:
+	@$(CC) $(CFLAGS) srcs/main.cpp -o $(NAME)
+
 # Color codes for improved readability
 BOLD    := \033[1m
 BLACK   := \033[30;1m

@@ -9,6 +9,10 @@
 # include "Request.hpp"
 # include "Response.hpp"
 
+class Request;
+
+class Response;
+
 class Client
 {
 	private:

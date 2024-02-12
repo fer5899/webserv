@@ -78,6 +78,7 @@ bool RequestHandler::parseFirstLine(std::string& line)
 	_version = tokens[2];
 	if (_method != "GET" && _method != "POST" && _method != "DELETE" && _method != "PUT")
 	{
+		std::cerr << "Error code: " << _errorCode << " "<<std::endl;
 		_errorCode = 405;
 		return true;
 	}
@@ -169,13 +170,13 @@ bool RequestHandler::parseBody(std::string& line)
 
 bool RequestHandler::parseRequest(std::string& request)
 {
-	int request_size = request.size() - countNewlines(request);
-	if (request_size == 0)
+	int request_size = request.size();
+	if (request_size  == 0)
 	{
 		_errorCode = 400;
 		return true;
 	}
-	_size += request_size;
+	_size += request_size - countNewlines(request);
 	if (_size > MAX_REQUEST_SIZE)
 	{
 		_errorCode = 413;

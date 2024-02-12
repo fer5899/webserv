@@ -39,7 +39,7 @@ int main()
 	if (requestHandler.getErrorCode() != 0)
 	{
 		std::cout << RED "Error code: " << requestHandler.getErrorCode() << RESET << std::endl;
-		return 1;
+		// return 1;
 	}
 	std::cout << BLUE "Method: " RESET<< requestHandler.getMethod() << std::endl;
 	std::cout << BLUE "URL: "RESET << requestHandler.getURL() << std::endl;

@@ -1,14 +1,10 @@
 #include "../include/RequestHandler.hpp"
 
-RequestHandler::RequestHandler(/*Client &client*/) : _path(""), _method(""), _version(""), _headers(), _errorCode(0), _body(""), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
-{
-	//_client = client;
-}
+RequestHandler::RequestHandler(/*Client &client*/) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
+{}
 
 RequestHandler::~RequestHandler()
-{
-	// free client
-}
+{}
 
 RequestHandler& RequestHandler::operator=(const RequestHandler& other)
 {
@@ -18,8 +14,8 @@ RequestHandler& RequestHandler::operator=(const RequestHandler& other)
 		_method = other._method;
 		_version = other._version;
 		_headers = other._headers;
-		_errorCode = other._errorCode;
 		_body = other._body;
+		_errorCode = other._errorCode;
 		_buffer = other._buffer;
 		_size = other._size;
 		_bodySize = other._bodySize;
@@ -28,7 +24,7 @@ RequestHandler& RequestHandler::operator=(const RequestHandler& other)
 	return *this;
 }
 
-RequestHandler::RequestHandler(const RequestHandler& other) : _path(other._path), _method(other._method), _version(other._version), _headers(other._headers), _errorCode(other._errorCode), _body(other._body), _buffer(other._buffer), _size(other._size), _bodySize(other._bodySize) , _state(other._state){}
+RequestHandler::RequestHandler(const RequestHandler& other) : _path(other._path), _method(other._method), _version(other._version), _headers(other._headers), _body(other._body), _errorCode(other._errorCode), _buffer(other._buffer), _size(other._size), _bodySize(other._bodySize) , _state(other._state){}
 
 std::map<std::string, std::string>	RequestHandler::getHeaders() const
 {
@@ -120,17 +116,17 @@ bool RequestHandler::parseBodyRequisites()
 	validTypes.push_back("application/x-www-form-urlencoded");
 	validTypes.push_back("multipart/form-data");
 	validTypes.push_back("text/plain");
-//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL
 	validTypes.push_back("application/json");
-	validTypes.push_back("application/xml");
-	validTypes.push_back("application/octet-stream");
-	validTypes.push_back("text/html");
-	validTypes.push_back("image/jpeg");
-	validTypes.push_back("image/png");
-	validTypes.push_back("audio/mpeg");
-	validTypes.push_back("application/pdf");
-	validTypes.push_back("text/css");
-	validTypes.push_back("application/javascript");
+//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL
+	// validTypes.push_back("application/xml");
+	// validTypes.push_back("application/octet-stream");
+	// validTypes.push_back("text/html");
+	// validTypes.push_back("image/jpeg");
+	// validTypes.push_back("image/png");
+	// validTypes.push_back("audio/mpeg");
+	// validTypes.push_back("application/pdf");
+	// validTypes.push_back("text/css");
+	// validTypes.push_back("application/javascript");
 	for (std::vector<std::string>::iterator it = validTypes.begin(); it != validTypes.end(); it++)
 	{
 		if (_headers["Content-Type"].find(*it) != std::string::npos)

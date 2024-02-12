@@ -18,30 +18,27 @@
 class RequestHandler
 {
 	private:
-		//Client		&_client;
-		// El response cuando acabe borra la request y el destructor de request libera ese id para que se pueda usar de nuevo (Un mismo cliente puede tener ocupados varias clases cliente a la vez)
-
 		//Info to send to the response
 		std::string	_path;
 		std::string	_method;
 		std::string	_version;
 		std::map<std::string, std::string> _headers;
-		int			_errorCode;
 		std::string	_body;
+		int			_errorCode;
 
 
 		//Self info
 		std::string	_buffer;
 		size_t		_size;
 		double		_bodySize;
-		int			_state;	// 0: Nothig, 1: Headers, 2: Body
+		int			_state;
 
 		bool 		parseFirstLine(std::string& line);
 		bool		parseHeaders(std::string& line);
 		bool		parseBodyRequisites();
 		bool		parseBody(std::string& line);
 	public:
-		RequestHandler(/* Client &client*/);
+		RequestHandler();
 		~RequestHandler();
 		RequestHandler& operator=(const RequestHandler& other);
 		RequestHandler(const RequestHandler& other);
@@ -50,7 +47,7 @@ class RequestHandler
 		std::string	getURL() const;
 		std::string	getHTTPVersion() const; // Si solo vamos a trabajar con 1.1 esto va fuera
 		std::string	getBody() const;
-		bool 		parseRequest(std::string& request); // Devuelve true si la request esta completa
+		bool 		parseRequest(std::string& request); // Devuelve true si la request ha fallado en algo o esta completa
 		int			getErrorCode() const;
 
 

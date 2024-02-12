@@ -64,6 +64,50 @@ int		RequestHandler::getErrorCode() const
 	return _errorCode;
 }
 
+bool RequestHandler::parseFirstLine(std::string& line)
+{
+	std::vector<std::string> tokens = split(line, ' ');
+	if (tokens.size() != 3)
+	{
+		_errorCode = 400;
+		return true;
+	}
+	_method = tokens[0];
+	_path = tokens[1];
+	_version = tokens[2];
+	if (_method != "GET" && _method != "POST" && _method != "DELETE" && _method != "PUT")
+	{
+		_errorCode = 405;
+		return true;
+	}
+	else if (_version != "HTTP/1.1")
+	{
+		_errorCode = 505;
+		return true;
+	}
+	_state = 1;
+	return false;
+}
+
+bool RequestHandler::parseHeaders(std::string& line)
+{
+	if (line.empty())
+	{
+		_state = 2;
+		return false;
+	}
+	std::string::size_type pos = line.find(": ");
+	if (pos == std::string::npos)
+	{
+		_errorCode = 400;
+		return true;
+	}
+	std::string key = line.substr(0, pos);
+	std::string value = line.substr(pos + 2);
+	_headers[key] = value;
+	return false;
+}
+
 bool RequestHandler::parseRequest(std::string& request)
 {
 	int request_size = request.size();
@@ -73,7 +117,7 @@ bool RequestHandler::parseRequest(std::string& request)
 		return true;
 	}
 	_size += request_size;
-	if (_size > 1000000) // 1MB Aqi lo cambiaremos con una macro
+	if (_size > MAX_REQUEST_SIZE)
 	{
 		_errorCode = 413;
 		return true;
@@ -87,46 +131,18 @@ bool RequestHandler::parseRequest(std::string& request)
 		request.erase(0, pos + 2);
 		if (_state == 0)
 		{
-			std::vector<std::string> tokens = split(line, ' ');
-			if (tokens.size() != 3)
-			{
-				_errorCode = 400;
+			if (parseFirstLine(line))
 				return true;
-			}
-			_method = tokens[0];
-			_path = tokens[1];
-			_version = tokens[2];
-			if (_method != "GET" && _method != "POST" && _method != "DELETE" && _method != "PUT")
-			{
-				_errorCode = 405;
-				return true;
-			}
-			else if (_version != "HTTP/1.1")
-			{
-				_errorCode = 505;
-				return true;
-			}
-			_state = 1;
 		}
 		else if (_state == 1)
 		{
-			if (line.empty() && _method == "POST")
-			{
-				_state = 2;
-			}
-			else if (line.empty())
-			{
+			if (parseHeaders(line))
 				return true;
-			}
-			pos = line.find(": ");
-			if (pos == std::string::npos)
-			{
-				_errorCode = 400;
-				return true;
-			}
-			std::string key = line.substr(0, pos);
-			std::string value = line.substr(pos + 2);
-			_headers[key] = value;
+		}
+		else if (_state == 2)
+		{
+			_body += line;
+			_body += "\n";
 		}
 		pos = request.find("\n"); // Incluir salto de carro
 	}

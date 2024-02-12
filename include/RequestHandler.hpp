@@ -5,6 +5,7 @@
 #include <vector>
 #include "utils.hpp"
 
+#define MAX_REQUEST_SIZE 1000000
 //COLORS
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
@@ -33,6 +34,10 @@ class RequestHandler
 		std::string	_buffer;
 		size_t		_size;
 		int			_state;	// 0: Nothig, 1: Headers, 2: Body
+
+		bool 		parseFirstLine(std::string& line);
+		bool		parseHeaders(std::string& line);
+		bool		parseBody(std::string& line);
 	public:
 		RequestHandler(/* Client &client*/);
 		~RequestHandler();

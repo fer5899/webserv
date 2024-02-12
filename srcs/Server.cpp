@@ -47,7 +47,7 @@ int main()
 	{
 		std::cout << it->first << ": " << it->second << std::endl;
 	}
-	std::cout << "Body: " << requestHandler.getBody() << std::endl;
+	std::cout << std::endl << BLUE "Body: " RESET << std::endl << requestHandler.getBody() << std::endl;
 
 	fclose(archivo);
 

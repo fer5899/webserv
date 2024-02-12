@@ -72,7 +72,7 @@ bool RequestHandler::parseFirstLine(std::string& line)
 	_method = tokens[0];
 	_path = tokens[1];
 	_version = tokens[2];
-	if (_method != "GET" && _method != "POST" && _method != "DELETE" && _method != "PUT")
+	if (_method != "GET" && _method != "POST" && _method != "DELETE")
 	{
 		std::cerr << "Error code: " << _errorCode << " "<<std::endl;
 		_errorCode = 405;
@@ -118,15 +118,15 @@ bool RequestHandler::parseBodyRequisites()
 	validTypes.push_back("text/plain");
 	validTypes.push_back("application/json");
 //IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL
-	// validTypes.push_back("application/xml");
-	// validTypes.push_back("application/octet-stream");
-	// validTypes.push_back("text/html");
-	// validTypes.push_back("image/jpeg");
-	// validTypes.push_back("image/png");
-	// validTypes.push_back("audio/mpeg");
-	// validTypes.push_back("application/pdf");
-	// validTypes.push_back("text/css");
-	// validTypes.push_back("application/javascript");
+	validTypes.push_back("application/xml");
+	validTypes.push_back("application/octet-stream");
+	validTypes.push_back("text/html");
+	validTypes.push_back("image/jpeg");
+	validTypes.push_back("image/png");
+	validTypes.push_back("audio/mpeg");
+	validTypes.push_back("application/pdf");
+	validTypes.push_back("text/css");
+	validTypes.push_back("application/javascript");
 	for (std::vector<std::string>::iterator it = validTypes.begin(); it != validTypes.end(); it++)
 	{
 		if (_headers["Content-Type"].find(*it) != std::string::npos)

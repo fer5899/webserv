@@ -12,3 +12,14 @@ std::vector<std::string> split(const std::string &s, char delimiter)
 
     return tokens;
 }
+
+int countNewlines(const std::string& text)
+{
+    int counter = 0;
+    for (size_t i = 0; i < text.length(); ++i) {
+        if (text[i] == '\n') {
+            counter++;
+        }
+    }
+    return counter;
+}

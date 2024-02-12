@@ -4,10 +4,13 @@ User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 Accept: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 Content-Type: application/json
-Content-Length: 56
+Content-Length: 57
 Connection: keep-alive
 
+
+
+
 {
-  "username": "john_doe",
-  "email": "john.doe@example.com"
+	"username": "john_doe",
+	"email": "john.doe@example.com"
 }

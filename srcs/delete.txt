@@ -1,14 +1,2 @@
-DELETE /api/v1/resources/batch?ids=123,456,789 HTTP/1.1
-Host: api.example.com
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36
-Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-Content-Type: application/json
-Cache-Control: no-cache
-Pragma: no-cache
-Connection: keep-alive
-
-{
-  "ids": [123, 456, 789],
-  "reason": "Outdated data"
-}
+DELETE /ejemplo/recurso HTTP/1.1
+Host: www.ejemplo.com

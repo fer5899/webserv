@@ -7,7 +7,7 @@
 
 int main()
 {
-    const char* filename = "srcs/get.txt";
+    const char* filename = "srcs/post.txt";
     FILE* archivo = fopen(filename, "rb");
 
     if (archivo == NULL) {
@@ -22,13 +22,15 @@ int main()
 	std::string content;
 	while (fgets(buffer, buffer_size, archivo) != NULL)
 	{
-		content.append(buffer, buffer_size);
 		buffer_str = buffer;
+		content+= buffer_str;
 		if (requestHandler.parseRequest(buffer_str))
 		{
 			break;
 		}
 	}
+	fclose(archivo);
+
 	std::cout << YELLOW "HTTP request content:" RESET<< std::endl;
 	std::cout << content << std::endl;
 	std::cout << std::endl;
@@ -36,7 +38,8 @@ int main()
 	std::cout << YELLOW "HTTP request parsed: (PURA MAGIA)" RESET<<std::endl;
 	if (requestHandler.getErrorCode() != 0)
 	{
-		std::cout << "Error code: " << requestHandler.getErrorCode() << std::endl;
+		std::cout << RED "Error code: " << requestHandler.getErrorCode() << RESET << std::endl;
+		return 1;
 	}
 	std::cout << BLUE "Method: " RESET<< requestHandler.getMethod() << std::endl;
 	std::cout << BLUE "URL: "RESET << requestHandler.getURL() << std::endl;
@@ -48,8 +51,6 @@ int main()
 		std::cout << it->first << ": " << it->second << std::endl;
 	}
 	std::cout << std::endl << BLUE "Body: " RESET << std::endl << requestHandler.getBody() << std::endl;
-
-	fclose(archivo);
 
     return 0;
 }

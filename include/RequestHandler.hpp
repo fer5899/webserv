@@ -33,10 +33,12 @@ class RequestHandler
 		//Self info
 		std::string	_buffer;
 		size_t		_size;
+		double		_bodySize;
 		int			_state;	// 0: Nothig, 1: Headers, 2: Body
 
 		bool 		parseFirstLine(std::string& line);
 		bool		parseHeaders(std::string& line);
+		bool		parseBodyRequisites();
 		bool		parseBody(std::string& line);
 	public:
 		RequestHandler(/* Client &client*/);
@@ -71,9 +73,9 @@ class RequestHandler
 // 505 HTTP Version Not Supported (Versión de HTTP no soportada): El servidor no soporta la versión del protocolo HTTP utilizada en la solicitud.
 // 511 Network Authentication Required (Requiere autenticación de red): El cliente necesita autenticarse para obtener acceso a la red.
 
-// Yo me deberia ocupar de 400, 405, 413, 505 y cortar el contacto con el cliente directamente si pasa
+// Yo me deberia ocupar de 400, 405, 413, 415 y 505 y cortar el contacto con el cliente directamente si pasa alguno de ellos
 // 401, 408, 503, 504, 511 Server
-// 403, 404, 415, 501 Response 
+// 403, 404, 501 Response 
 // 500? Configuración incorrecta del servidor web
 
 

@@ -1,5 +1,5 @@
 #include "../include/Server.hpp"
-#include "../include/RequestHandler.hpp"
+#include "../include/Request.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -85,13 +85,34 @@
 // }
 
 
-int main()
+int main(int argc, char** argv)
 {
-	const char* filename = "srcs/post.txt";
+	std::cout << GREEN "Usage: ./server [get|post|delete]" << std::endl << "Default: post" RESET << std::endl;
+	const char* filename = "http_raw/post.txt";
+	if (argc == 2)
+	{
+		if (strcmp(argv[1], "get") == 0)
+		{
+			filename = "http_raw/get.txt";
+		}
+		else if (strcmp(argv[1], "post") == 0)
+		{
+			filename = "http_raw/post.txt";
+		}
+		else if (strcmp(argv[1], "delete") == 0)
+		{
+			filename = "http_raw/delete.txt";
+		}
+		else
+		{
+			std::cerr << RED "Invalid argument" RESET<< std::endl;
+			return 1;
+		}
+	}
 	FILE* archivo = fopen(filename, "rb");
 
 	if (archivo == NULL) {
-		std::cerr << RED "Error al abrir el archivo" RESET<< std::endl;
+		std::cerr << RED "Error: Can't open the file" RESET<< std::endl;
 		return 1;
 	}
 
@@ -115,7 +136,7 @@ int main()
 	std::cout << content << std::endl;
 	std::cout << std::endl;
 
-	std::cout << YELLOW "HTTP request parsed: (PURA MAGIA)" RESET<<std::endl << requestHandler << std::endl;
+	std::cout << YELLOW "HTTP request parsed:" RESET<<std::endl << requestHandler << std::endl;
 	std::cout << "Keep alive: " << (requestHandler.keepAlive() ? "true" : "false") << std::endl;
 	return 0;
 }

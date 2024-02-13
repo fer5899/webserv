@@ -1,4 +1,4 @@
-#include "../include/RequestHandler.hpp"
+#include "../include/Request.hpp"
 
 RequestHandler::RequestHandler(/*Client &client*/) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
 {}

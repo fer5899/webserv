@@ -6,6 +6,7 @@
 #include "utils.hpp"
 
 #define MAX_REQUEST_SIZE 1000000
+
 //COLORS
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
@@ -19,41 +20,43 @@ class RequestHandler
 {
 	private:
 		//Info to send to the response
-		std::string	_path;
-		std::string	_method;
-		std::string	_version;
+		std::string							_path;
+		std::string							_method;
+		std::string							_version;
 		std::map<std::string, std::string> _headers;
-		std::string	_body;
-		int			_errorCode;
+		std::string							_body;
+		int									_errorCode;
 
 
 		//Self info
-		std::string	_buffer;
-		size_t		_size;
-		double		_bodySize;
-		int			_state;
+		std::string							_buffer;
+		size_t								_size;
+		double								_bodySize;
+		int									_state;
 
-		bool 		parseFirstLine(std::string& line);
-		bool		parseHeaders(std::string& line);
-		bool		parseBodyRequisites();
-		bool		parseBody(std::string& line);
+		bool 								parseFirstLine(std::string& line);
+		bool								parseHeaders(std::string& line);
+		bool								parseBodyRequisites();
+		bool								parseBody(std::string& line);
+
 	public:
 		RequestHandler();
 		~RequestHandler();
-		RequestHandler& operator=(const RequestHandler& other);
 		RequestHandler(const RequestHandler& other);
+		RequestHandler& operator=(const RequestHandler& other);
+
 		std::map<std::string, std::string>	getHeaders() const;
-		std::string	getMethod() const;
-		std::string	getURL() const;
-		std::string	getHTTPVersion() const; // Si solo vamos a trabajar con 1.1 esto va fuera
-		std::string	getBody() const;
-		bool 		parseRequest(std::string& request); // Devuelve true si la request ha fallado en algo o esta completa
-		int			getErrorCode() const;
+		std::string							getMethod() const;
+		std::string							getURL() const;
+		std::string							getHTTPVersion() const;
+		std::string							getBody() const;
+		bool								keepAlive() const;
+		int									getErrorCode() const;
+		void								setErrorCode(int errorCode);
 
-
-		void		setErrorCode(int errorCode);
+		bool 								parseRequest(std::string& request); // Devuelve true si la request ha fallado en algo o esta completa
 };
-
+std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler);
 
 // 400 Bad Request (Solicitud incorrecta): Se devuelve cuando la sintaxis de la solicitud es incorrecta o no se puede entender por parte del servidor.
 // 401 Unauthorized (No autorizado): Indica que el cliente debe autenticarse para obtener acceso al recurso solicitado, pero no ha proporcionado credenciales válidas o las credenciales son insuficientes.

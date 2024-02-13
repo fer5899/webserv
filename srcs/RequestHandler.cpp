@@ -61,6 +61,12 @@ int		RequestHandler::getErrorCode() const
 	return _errorCode;
 }
 
+bool	RequestHandler::keepAlive() const
+{
+	std::map<std::string, std::string>::const_iterator it = _headers.find("Connection");
+	return (it != _headers.end() && it->second == "keep-alive");
+}
+
 bool RequestHandler::parseFirstLine(std::string& line)
 {
 	std::vector<std::string> tokens = split(line, ' ');
@@ -89,9 +95,11 @@ bool RequestHandler::parseFirstLine(std::string& line)
 
 bool RequestHandler::parseHeaders(std::string& line)
 {
-	if (line.empty() && _method == "POST")
+	if (line.empty())
 	{
-		return parseBodyRequisites();
+		if (_method == "POST")
+			return parseBodyRequisites();
+		// return true; // Se podria dejar si aceptamos que manden solicitudes get con body o cosas asi y no lanzar el error 400
 	}
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
@@ -161,6 +169,10 @@ bool RequestHandler::parseBody(std::string& line)
 		_errorCode = 413;
 		return true;
 	}
+	else if (_bodySize == 0)
+	{
+		return true;
+	}
 	return false;
 }
 
@@ -172,7 +184,7 @@ bool RequestHandler::parseRequest(std::string& request)
 		_errorCode = 400;
 		return true;
 	}
-	_size += request_size - countNewlines(request);
+	_size += request_size - countNewlines(request); // Incluir salto de carro en countNewLines
 	if (_size > MAX_REQUEST_SIZE)
 	{
 		_errorCode = 413;
@@ -204,4 +216,31 @@ bool RequestHandler::parseRequest(std::string& request)
 	}
 	_buffer += request;
 	return false;
+}
+
+std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler)
+{
+	if (requestHandler.getErrorCode() != 0)
+	{
+		os << RED "Error code: " RESET << requestHandler.getErrorCode() << std::endl;
+		return os;
+	}
+	os << "--------------------------------" << std::endl;
+	os << BLUE "Method: " RESET << requestHandler.getMethod() << std::endl;
+	os << BLUE "URL: " RESET << requestHandler.getURL() << std::endl;
+	os << BLUE "HTTP version: " RESET << requestHandler.getHTTPVersion() << std::endl;
+	os << "--------------------------------" << std::endl;
+	os << BLUE "Headers:" RESET << std::endl;
+	std::map<std::string, std::string> headers = requestHandler.getHeaders();
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		os << CYAN << it->first << ": " RESET << it->second << std::endl;
+	}
+	if (requestHandler.getBody().size() > 0)
+	{
+		os << "--------------------------------" << std::endl;
+		os << BLUE "Body: " RESET << std::endl << requestHandler.getBody() << std::endl;
+	}
+	os << "--------------------------------" << std::endl;
+	return os;
 }

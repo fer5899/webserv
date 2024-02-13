@@ -8,8 +8,6 @@ Content-Length: 57
 Connection: keep-alive
 
 
-
-
 {
 	"username": "john_doe",
 	"email": "john.doe@example.com"

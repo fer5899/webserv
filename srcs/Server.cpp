@@ -92,26 +92,18 @@ int main(int argc, char** argv)
 	if (argc == 2)
 	{
 		if (strcmp(argv[1], "get") == 0)
-		{
 			filename = "http_raw/get.txt";
-		}
 		else if (strcmp(argv[1], "post") == 0)
-		{
 			filename = "http_raw/post.txt";
-		}
 		else if (strcmp(argv[1], "delete") == 0)
-		{
 			filename = "http_raw/delete.txt";
-		}
 		else
-		{
-			std::cerr << RED "Invalid argument" RESET<< std::endl;
-			return 1;
-		}
+			return (std::cerr << RED "Invalid argument" RESET << std::endl, 1);
 	}
-	FILE* archivo = fopen(filename, "rb");
 
-	if (archivo == NULL) {
+	FILE* archivo = fopen(filename, "rb");
+	if (archivo == NULL)
+	{
 		std::cerr << RED "Error: Can't open the file" RESET<< std::endl;
 		return 1;
 	}
@@ -126,17 +118,12 @@ int main(int argc, char** argv)
 		buffer_str = buffer;
 		content+= buffer_str;
 		if (requestHandler.parseRequest(buffer_str))
-		{
 			break;
-		}
 	}
 	fclose(archivo);
 
-	std::cout << std::endl <<YELLOW "HTTP request raw content:" RESET<< std::endl;
-	std::cout << content << std::endl;
-	std::cout << std::endl;
+	std::cout << std::endl << YELLOW "HTTP request raw content:" RESET << std::endl << content << std::endl << std::endl;
 
-	std::cout << YELLOW "HTTP request parsed:" RESET<<std::endl << requestHandler << std::endl;
-	std::cout << "Keep alive: " << (requestHandler.keepAlive() ? "true" : "false") << std::endl;
+	std::cout << YELLOW "HTTP request parsed:" RESET << std::endl << requestHandler << std::endl;
 	return 0;
 }

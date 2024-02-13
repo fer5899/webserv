@@ -229,6 +229,7 @@ std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler)
 	os << BLUE "Method: " RESET << requestHandler.getMethod() << std::endl;
 	os << BLUE "URL: " RESET << requestHandler.getURL() << std::endl;
 	os << BLUE "HTTP version: " RESET << requestHandler.getHTTPVersion() << std::endl;
+	os << BLUE "Keep-Alive: " RESET << (requestHandler.keepAlive() ? "true" : "false") << std::endl;
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Headers:" RESET << std::endl;
 	std::map<std::string, std::string> headers = requestHandler.getHeaders();

@@ -1,5 +1,6 @@
 #include "../include/ConnectionManager.hpp"
 #include "../include/Server.hpp"
+#include "../include/Client.hpp"
 
 ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 
 {
@@ -49,10 +50,12 @@ void ConnectionManager::runServers()
 					std::cerr << "Accept failed: " << strerror(errno) << std::endl;
 					exit(EXIT_FAILURE);
 				}
-				std::cout << "New connection, socket fd is " << new_socket << std::endl;
+				//std::cout << "New connection, socket fd is " << new_socket << std::endl;
 				FD_SET(new_socket, &this->_read_sockets);
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
+				this->addClient(Client(getServerBySocket(i), new_socket));
+				std::cout << "New client added: " << new_socket << std::endl;
 			}
 
 			// Read from client sockets
@@ -120,11 +123,11 @@ void ConnectionManager::runServers()
 					std::cout << "Data sent" << std::endl;
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					this->removeClient(i);
 					std::cout << "Connection closed" << std::endl;
 				}
 			}
 		}
-		
 	}
 }
 
@@ -149,5 +152,42 @@ bool ConnectionManager::isServerSocket(int socket) const
 			return true;
 	}
 	return false;
+}
+
+void ConnectionManager::addClient(Client client)
+{
+	this->_clients.push_back(client);
+}
+
+void ConnectionManager::removeClient(int socket)
+{
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		if (it->getSocket() == socket)
+		{
+			_clients.erase(it);
+			break;
+		}
+	}
+}
+
+Server ConnectionManager::getServerBySocket(int socket) const
+{
+	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); it++)
+	{
+		if (it->getSocket() == socket)
+			return *it;
+	}
+	return Server(0);
+}
+
+Client ConnectionManager::getClientBySocket(int socket) const
+{
+	for (std::vector<Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		if (it->getSocket() == socket)
+			return *it;
+	}
+	return Client(Server(0), 0);
 }
 

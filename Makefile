@@ -31,7 +31,7 @@ re: fclean all
 ##########################################################################################################################
 
 # Build rules
-$(NAME): $(OBJS)
+$(NAME): $(OBJ_DIR) $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 	@echo "$(MAGENTA)Program $(NAME) created successfully.$(DEFAULT)"
 

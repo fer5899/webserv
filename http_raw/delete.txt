@@ -1,0 +1,2 @@
+DELETE /ejemplo/recurso HTTP/1.1
+Host: www.ejemplo.com

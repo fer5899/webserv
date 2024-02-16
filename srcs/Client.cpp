@@ -8,3 +8,13 @@ int Client::getSocket() const
 {
 	return this->_socket;
 }
+
+RequestHandler Client::getRequestHandler() const
+{
+	return this->_requestHandler;
+}
+
+// void Client::setRequestHandler(RequestHandler requestHandler)
+// {
+// 	this->_requestHandler = requestHandler;
+// }

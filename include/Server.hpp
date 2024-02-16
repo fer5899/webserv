@@ -26,6 +26,17 @@ class Server
 		Server(/* args */);
 		~Server();
 
+		std::string					getServerName();
+		std::string					getHost();
+		int							getPort();
+		std::map<int, std::string>	getDefError();
+		int							getMaxBodySize();
+		std::vector<Location>		getLocations();
+		int							getSocket();
+		std::string					getRoot();
+		std::string					getUploads();
+		std::string					getIndex();
+
 };
 
 #endif

@@ -26,6 +26,11 @@ class Client
 		Client(/* args */);
 		~Client();
 
+		Request		*getRequest() const;
+		Response	*getResponse() const;
+		int			getSocket() const;
+		Server		&getServer() const;
+
 };
 
 #endif

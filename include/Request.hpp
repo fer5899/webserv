@@ -20,21 +20,21 @@ enum e_request_methods
 class Request
 {
 	private:
-		std::string 										raw_request;
-		std::string											path;
-		std::map<std::string, std::string>					query_params;
-		std::map<std::string, std::string>					headers;
-		std::vector<std::map<std::string, std::string> >	body;
-		int													method;
-		Client												&client;
-		bool												bad_request;
+		std::string 										_raw_request;
+		std::string											_path;
+		std::map<std::string, std::string>					_query_params;
+		std::map<std::string, std::string>					_headers;
+		std::vector<std::map<std::string, std::string> >	_body;
+		std::string											_method;
+		int													_errorCode;
 
 	public:
 		Request(/* args */);
 		~Request();
 
 		std::vector<Location>	getLocations();
-		int						getMethod();
+		int						getErrorCode();
+		std::string	getMethod();
 		std::map<std::string, std::string>	getHeaders();
 		std::vector<std::map<std::string, std::string> >	getBody();
 		std::string	getPath();

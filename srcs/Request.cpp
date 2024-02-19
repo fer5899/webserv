@@ -106,7 +106,8 @@ bool RequestHandler::parseHeaders(std::string& line)
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
 	{
-		_errorCode = 400;
+		if (!line.empty())
+			_errorCode = 400;
 		return true;
 	}
 	std::string key = line.substr(0, pos);
@@ -192,7 +193,7 @@ bool RequestHandler::parseRequest(std::string& request)
 		_errorCode = 413;
 		return true;
 	}
-	std::string::size_type pos = request.find("\n"); // Incluir salto de carro
+	std::string::size_type pos = request.find("\r\n"); // Incluir salto de carro
 	while (pos != std::string::npos && _state < 2)
 	{
 		
@@ -209,7 +210,7 @@ bool RequestHandler::parseRequest(std::string& request)
 			if (parseHeaders(line))
 				return true;
 		}
-		pos = request.find("\n"); // Incluir salto de carro
+		pos = request.find("\r\n");
 	}
 	if (_state == 2)
 	{
@@ -225,7 +226,7 @@ std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler)
 	if (requestHandler.getErrorCode() != 0)
 	{
 		os << RED "Error code: " RESET << requestHandler.getErrorCode() << std::endl;
-		return os;
+		// return os;
 	}
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << requestHandler.getMethod() << std::endl;

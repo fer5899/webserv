@@ -18,7 +18,8 @@ int countNewlines(const std::string& text)
     int counter = 0;
     for (size_t i = 0; i < text.length(); ++i) {
         if (text[i] == '\n') {
-            counter++;
+			if (i > 0 && text[i - 1] != '\r')
+            	counter++;
         }
     }
     return counter;

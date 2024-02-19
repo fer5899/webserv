@@ -11,13 +11,13 @@ class Client
 		~Client();
 
 		int getSocket() const;
-		RequestHandler getRequestHandler() const;
-		//void setRequestHandler(RequestHandler requestHandler);
+		RequestHandler *getRequestHandler() const;
+		void setRequestHandler(void);
 		
 	private:
 		Server _server;
 		int _socket;
-		RequestHandler _requestHandler;
+		RequestHandler *_requestHandler;
 		//Response _response;
 };
 

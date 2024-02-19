@@ -61,6 +61,18 @@ void ConnectionManager::runServers()
 			// Read from client sockets
 			else if (FD_ISSET(i, &read_sockets_copy))
 			{
+				Client *client = this->getClientBySocket(i);
+				if (client == NULL)
+				{
+					std::cerr << "Client not found" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+		
+				if (client->getRequestHandler() == NULL)
+				{
+					client->setRequestHandler();	
+				}
+				
 				char buffer[BUFFER_SIZE];
 				ssize_t bytesRead = recv(i, buffer, BUFFER_SIZE - 1, 0);
 				if (bytesRead == -1)
@@ -85,11 +97,11 @@ void ConnectionManager::runServers()
 					std::cout << buffer_str << std::endl;
 					
 					// Now we pass the buffer to the request handler and check if the request is complete
-					if (this->getClientBySocket(i).getRequestHandler().parseRequest(buffer_str))
+					if (client->getRequestHandler()->parseRequest(buffer_str))
 					{
 						std::cout << std::endl;
 						std::cout << "-----Received complete HTTP Request: " << std::endl;
-						std::cout << this->getClientBySocket(i).getRequestHandler() << std::endl;
+						std::cout << *(client->getRequestHandler()) << std::endl;
 
 						FD_CLR(i, &this->_read_sockets);
 						FD_SET(i, &this->_write_sockets);
@@ -179,14 +191,17 @@ Server ConnectionManager::getServerBySocket(int socket) const
 	return Server(0);
 }
 
-Client ConnectionManager::getClientBySocket(int socket) const
+Client *ConnectionManager::getClientBySocket(int socket)
 {
-	for (std::vector<Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
+	for (unsigned long i = 0; i < this->_clients.size(); i++)
 	{
-		if (it->getSocket() == socket)
-			return *it;
+		if (this->_clients[i].getSocket() == socket)
+		{
+			Client *c = &(this->_clients[i]);
+			return c;
+		}
 	}
-	return Client(NULL, 0);
+	return NULL;
 }
 
 

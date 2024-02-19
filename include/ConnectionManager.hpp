@@ -4,7 +4,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 4000
 
 class ConnectionManager
 {
@@ -16,8 +16,8 @@ class ConnectionManager
 		void runServers();
 	
 	private:
-		std::vector<Server> _servers;
 		std::vector<Client> _clients;
+		std::vector<Server> _servers;
 		int _max_socket;
 		int _count;
 		fd_set _read_sockets, _write_sockets;
@@ -27,7 +27,7 @@ class ConnectionManager
 		void addClient(Client client);
 		void removeClient(int socket);
 		Server getServerBySocket(int socket) const;
-		Client getClientBySocket(int socket) const;
+		Client *getClientBySocket(int socket);
 };
 
 #endif

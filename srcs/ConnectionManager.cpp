@@ -68,9 +68,9 @@ void ConnectionManager::runServers()
 					exit(EXIT_FAILURE);
 				}
 		
-				if (client->getRequestHandler() == NULL)
+				if (client->getRequest() == NULL)
 				{
-					client->setRequestHandler();	
+					client->setRequest();	
 				}
 				
 				char buffer[BUFFER_SIZE];
@@ -97,11 +97,11 @@ void ConnectionManager::runServers()
 					std::cout << buffer_str << std::endl;
 					
 					// Now we pass the buffer to the request handler and check if the request is complete
-					if (client->getRequestHandler()->parseRequest(buffer_str))
+					if (client->getRequest()->parseRequest(buffer_str))
 					{
 						std::cout << std::endl;
 						std::cout << "-----Received complete HTTP Request: " << std::endl;
-						std::cout << *(client->getRequestHandler()) << std::endl;
+						std::cout << *(client->getRequest()) << std::endl;
 
 						FD_CLR(i, &this->_read_sockets);
 						FD_SET(i, &this->_write_sockets);

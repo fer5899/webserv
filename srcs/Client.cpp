@@ -1,6 +1,6 @@
 #include "../include/Client.hpp"
 
-Client::Client(Server server, int socket) : _server(server), _socket(socket), _requestHandler(NULL) {}
+Client::Client(Server server, int socket) : _server(server), _socket(socket), _Request(NULL) {}
 
 Client::~Client() {}
 
@@ -9,12 +9,12 @@ int Client::getSocket() const
 	return this->_socket;
 }
 
-RequestHandler *Client::getRequestHandler() const
+Request *Client::getRequest() const
 {
-	return this->_requestHandler;
+	return this->_Request;
 }
 
-void Client::setRequestHandler(void)
+void Client::setRequest(void)
 {
-	this->_requestHandler = new RequestHandler();
+	this->_Request = new Request();
 }

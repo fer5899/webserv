@@ -48,7 +48,7 @@ int main()
 // 		return 1;
 // 	}
 
-// 	RequestHandler requestHandler;
+// 	Request Request;
 // 	const int buffer_size = 8; // Tamaño del buffer en bytes
 // 	char buffer[buffer_size];
 // 	std::string buffer_str;
@@ -57,13 +57,13 @@ int main()
 // 	{
 // 		buffer_str = buffer;
 // 		content+= buffer_str;
-// 		if (requestHandler.parseRequest(buffer_str))
+// 		if (Request.parseRequest(buffer_str))
 // 			break;
 // 	}
 // 	fclose(archivo);
 
 // 	std::cout << std::endl << YELLOW "HTTP request raw content:" RESET << std::endl << content << std::endl << std::endl;
 
-// 	std::cout << YELLOW "HTTP request parsed:" RESET << std::endl << requestHandler << std::endl;
+// 	std::cout << YELLOW "HTTP request parsed:" RESET << std::endl << Request << std::endl;
 // 	return 0;
 // }

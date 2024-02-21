@@ -1,6 +1,6 @@
 #include "../include/Request.hpp"
 
-RequestHandler::RequestHandler(/*Client &client*/) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
+RequestHandler::RequestHandler() : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
 {}
 
 RequestHandler::~RequestHandler()
@@ -99,7 +99,7 @@ bool RequestHandler::parseHeaders(std::string& line)
 	{
 		if (_method == "POST")
 			return parseBodyRequisites();
-		// return true; // Se podria dejar si aceptamos que manden solicitudes get con body o cosas asi y no lanzar el error 400
+		return true;
 	}
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
@@ -163,7 +163,7 @@ bool RequestHandler::parseBodyRequisites()
 bool RequestHandler::parseBody(std::string& line)
 {
 	_body += line;
-	_bodySize -= line.size() - countNewlines(line);
+	_bodySize -= line.size() - countSubstring(line, "\r\n");
 	if (_bodySize < 0)
 	{
 		_errorCode = 413;
@@ -184,13 +184,13 @@ bool RequestHandler::parseRequest(std::string& request)
 		_errorCode = 400;
 		return true;
 	}
-	_size += request_size - countNewlines(request); // Incluir salto de carro en countNewLines
+	_size += request_size - countSubstring(request, "\r\n");
 	if (_size > MAX_REQUEST_SIZE)
 	{
 		_errorCode = 413;
 		return true;
 	}
-	std::string::size_type pos = request.find("\n"); // Incluir salto de carro
+	std::string::size_type pos = request.find("\r\n");
 	while (pos != std::string::npos && _state < 2)
 	{
 		
@@ -207,7 +207,7 @@ bool RequestHandler::parseRequest(std::string& request)
 			if (parseHeaders(line))
 				return true;
 		}
-		pos = request.find("\n"); // Incluir salto de carro
+		pos = request.find("\r\n");
 	}
 	if (_state == 2)
 	{

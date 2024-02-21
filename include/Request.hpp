@@ -54,7 +54,7 @@ class RequestHandler
 		int									getErrorCode() const;
 		void								setErrorCode(int errorCode);
 
-		bool 								parseRequest(std::string& request); // Devuelve true si la request ha fallado en algo o esta completa
+		bool 								parseRequest(std::string& request);
 };
 std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler);
 
@@ -77,9 +77,3 @@ std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler)
 // 401, 408, 503, 504, 511 Server
 // 403, 404, 501 Response 
 // 500? Configuración incorrecta del servidor web
-
-
-// struct timeval timeout;
-// timeout.tv_sec = 5; // 5 segundos
-// timeout.tv_usec = 0;
-// int result = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout); if (result = -1)

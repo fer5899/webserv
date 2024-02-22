@@ -431,3 +431,15 @@ void	Response::handleFileUpload()
 	_http_response = _status + _headers_str + "\r\n";
 }
 
+void	Response::handleDeleteFile()
+{
+	std::string file_path = buildFilesystemPath(_request->getPath());
+	if (remove(file_path.c_str()) != 0)
+		return setErrorResponse(404);
+
+	// Build response
+	_status = "HTTP/1.1 204 No Content\r\n";
+	_headers_str.append("Content-Length: 0\r\n");
+	_http_response = _status + _headers_str + "\r\n";
+}
+

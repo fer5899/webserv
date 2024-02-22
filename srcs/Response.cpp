@@ -346,3 +346,88 @@ void	Response::buildAutoindex(std::string filesys_dir_path)
 		return setErrorResponse(500);
 }
 
+void	Response::parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents)
+{
+	std::string	section;
+	std::string scd; // Section content disposition
+	std::string filename;
+	std::string s_body; // Section body
+	size_t start_pos = 0;
+	size_t end_pos = 0;
+
+	while ((end_pos = body.find("--" + boundary, start_pos)) != std::string::npos)
+	{
+		section = body.substr(start_pos, end_pos - start_pos);
+		scd = section.substr(0, section.find("\r\n", 2));
+		size_t body_start = section.find("\r\n\r\n") + 4;
+		size_t filename_pos = scd.find("filename=");
+		if (filename_pos != std::string::npos)
+		{
+			if (section.size() > body_start + 2)
+			{
+				// Parse filename from Content-Disposition
+				filename = scd.substr(filename_pos + 9, scd.find_first_of(";\r", filename_pos + 9) - filename_pos - 9);
+				// Trim the filename of leading and trailing whitespaces and quotes
+				size_t start = filename.find_first_not_of(" \"");
+				size_t end = filename.find_last_not_of(" \"");
+				filename = filename.substr(start, end - start + 1);
+				// Get the body of the section
+				s_body = section.substr(body_start, section.size() - body_start - 2);
+				// Store the filename and body
+				form_elements_filenames.push_back(filename);
+				form_elements_contents.push_back(s_body);
+			}
+		}
+		start_pos = end_pos + boundary.size() + 2;
+	}
+}
+
+void	Response::handleFileUpload()
+{
+	// Check if the location allows file uploads
+	std::string upload_store = _location->getUploadStore();
+	if (upload_store.empty())
+		return setErrorResponse(403);
+
+	std::string content_type;
+	// Check if Content-Type header in request is multipart/form-data or multipart/mixed
+	try
+	{
+		content_type = _request->getHeaders().at("Content-Type");
+		if (content_type.find("multipart/form-data") == std::string::npos
+			&& content_type.find("multipart/mixed") == std::string::npos)
+			return setErrorResponse(400);
+	}
+	catch(const std::out_of_range& e)
+	{
+		return setErrorResponse(400);
+	}
+
+	std::vector<std::string> form_elements_filenames;
+	std::vector<std::string> form_elements_contents;
+
+	// Parse boundary from Content-Type header
+	std::string boundary = content_type.substr(content_type.find("boundary=") + 9);
+
+	parseUploadBody(_request->getBody(), boundary, form_elements_filenames, form_elements_contents);
+
+	// Create files with their respective filename and content
+	for (size_t i = 0; i < form_elements_filenames.size(); i++)
+	{
+		std::string file_path = upload_store + "/" + form_elements_filenames[i];
+		std::ofstream file(file_path);
+		if (file.is_open())
+		{
+			file << form_elements_contents[i];
+			file.close();
+		}
+		else
+			return setErrorResponse(500);
+	}
+
+	// Build response
+	_status = "HTTP/1.1 201 Created\r\n";
+	_headers_str.append("Content-Length: 0\r\n");
+	_http_response = _status + _headers_str + "\r\n";
+}
+

@@ -16,11 +16,11 @@ class Response;
 class Client
 {
 	private:
-		int			socket;
-		Server		&server;
-		Request		*request;
-		Response	*response;
-		int			req_count;
+		int			_socket;
+		Server		&_server;
+		Request		*_request;
+		Response	*_response;
+		int			_req_count;
 
 	public:
 		Client(/* args */);

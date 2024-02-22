@@ -34,11 +34,12 @@ class Response
 		Client								&_client;
 		Location							*_location;
 
+		void		parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents);
+		Location	*matchLocation();
 		void		setContentType();
 		void		setDateServer();
 		void		setErrorResponse(int status);
 		void		setRedirection();
-		Location	*matchLocation();
 		bool		checkValidMethod();
 		bool		checkCGI();
 		void		executeCGI();

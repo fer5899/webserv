@@ -22,7 +22,7 @@ class Server
 
 
 	public:
-		Server(/* args */);
+		Server(std::string server_name, std::string host, int port, std::map<int, std::string> error_page, int max_body_size, std::vector<Location> &locations, int socket, std::string root, std::string index);
 		~Server();
 
 		std::string					getServerName();
@@ -33,7 +33,6 @@ class Server
 		std::vector<Location>		getLocations();
 		int							getSocket();
 		std::string					getRoot();
-		std::string					getUploads();
 		std::string					getIndex();
 
 };

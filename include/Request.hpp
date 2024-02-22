@@ -21,7 +21,8 @@ class Request
 		int									_errorCode;
 
 	public:
-		Request(/* args */);
+		Request();
+		Request(std::string path, std::map<std::string, std::string> headers, std::string body, std::string method, int error_code); // Testing constructor
 		~Request();
 
 		std::vector<Location>				getLocations();
@@ -30,7 +31,7 @@ class Request
 		std::map<std::string, std::string>	getHeaders();
 		std::string							getBody();
 		std::string							getPath();
-		std::string							getQueryParams();
+		std::map<std::string, std::string>	getQueryParams();
 
 };
 

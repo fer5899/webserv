@@ -12,8 +12,10 @@
 # include <dirent.h>
 # include <unistd.h>
 # include "Request.hpp"
+# include "Client.hpp"
 
 class Request;
+class Client;
 
 template <typename T>
 std::string numberToString ( T Number )
@@ -30,8 +32,8 @@ class Response
 		std::string							_headers_str;
 		std::string							_body;
 		std::string							_http_response;
+		Client								*_client;
 		Request								*_request;
-		Client								&_client;
 		Location							*_location;
 
 		void		parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents);
@@ -54,7 +56,7 @@ class Response
 		void		buildHttpResponse();
 
 	public:
-		Response(Client &client);
+		Response(Client *client, Request *request);
 		~Response();
 
 		std::string	getHttpResponse();

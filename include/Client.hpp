@@ -23,13 +23,15 @@ class Client
 		int			_req_count;
 
 	public:
-		Client(/* args */);
+		Client(int socket, Server &server);
 		~Client();
 
 		Request		*getRequest() const;
 		Response	*getResponse() const;
 		int			getSocket() const;
 		Server		&getServer() const;
+
+		void		setRequest(Request *request);
 
 };
 

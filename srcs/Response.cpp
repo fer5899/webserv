@@ -1,7 +1,7 @@
 #include "../include/Response.hpp"
 
 
-Response::Response(Client &client) : _client(client), _request(client.getRequest())
+Response::Response(Client *client, Request *request) : _client(client), _request(request)
 {
 	_status = "";
 	_headers_str = "";
@@ -57,7 +57,7 @@ std::string	Response::getHttpResponse()
 
 Location	*Response::matchLocation()
 {
-	std::vector<Location>		locations = _request->getLocations();
+	std::vector<Location>		locations = _client->getServer().getLocations();
 	if (locations.empty())
 		return (NULL);
 	size_t	max_loc_size = 0;
@@ -251,7 +251,7 @@ void	Response::setErrorResponse(int errorCode)
 	// Get error page from default error pages
 	try
 	{
-		std::string error_page_path = _client.getServer().getDefError().at(errorCode);
+		std::string error_page_path = _client->getServer().getDefError().at(errorCode);
 		struct stat fileStat;
 		if (stat(error_page_path.c_str(), &fileStat) == 0)
 		{

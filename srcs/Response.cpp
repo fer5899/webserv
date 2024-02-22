@@ -50,6 +50,23 @@ void	Response::buildHttpResponse()
 
 }
 
+std::string Response::generateTimestamp()
+{
+	std::time_t currentTime = std::time(nullptr);
+	std::tm* localTime = std::localtime(&currentTime);
+	std::string	separator = "";
+
+	std::stringstream timestamp;
+	timestamp << localTime->tm_year + 1900 << separator
+				<< std::setw(2) << std::setfill('0') << localTime->tm_mon + 1 << separator
+				<< std::setw(2) << std::setfill('0') << localTime->tm_mday << separator
+				<< std::setw(2) << std::setfill('0') << localTime->tm_hour << separator
+				<< std::setw(2) << std::setfill('0') << localTime->tm_min << separator
+				<< std::setw(2) << std::setfill('0') << localTime->tm_sec;
+
+	return timestamp.str();
+}
+
 std::string	Response::getHttpResponse()
 {
 	return (_http_response);
@@ -414,7 +431,7 @@ void	Response::handleFileUpload()
 	// Create files with their respective filename and content
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
-		std::string file_path = upload_store + "/" + form_elements_filenames[i];
+		std::string file_path = upload_store + "/" + form_elements_filenames[i] + "_" + generateTimestamp();
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{

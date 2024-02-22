@@ -89,26 +89,10 @@ void	test_delete_file_not_found()
 
 }
 
-std::string generateTimestamp() {
-    std::time_t currentTime = std::time(nullptr);
-    std::tm* localTime = std::localtime(&currentTime);
-	std::string	separator = "_";
 
-    std::stringstream timestamp;
-    timestamp << localTime->tm_year + 1900 << separator
-              << std::setw(2) << std::setfill('0') << localTime->tm_mon + 1 << separator
-              << std::setw(2) << std::setfill('0') << localTime->tm_mday << separator
-              << std::setw(2) << std::setfill('0') << localTime->tm_hour << separator
-              << std::setw(2) << std::setfill('0') << localTime->tm_min << separator
-              << std::setw(2) << std::setfill('0') << localTime->tm_sec;
-
-    return timestamp.str();
-}
 
 // TEST RESPONSE
 int	main(void)
 {
-
-	std::cout << generateTimestamp() << std::endl;
 
 }

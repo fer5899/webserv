@@ -165,7 +165,7 @@ void	Response::setDateServer()
 void	Response::setContentType()
 {
 	std::map<std::string, std::string> content_types;
-	content_types["html"] = "text/html";
+	content_types["html"] = "text/html"; 
 	content_types["css"] = "text/css";
 	content_types["js"] = "text/javascript";
 	content_types["jpg"] = "image/jpeg";
@@ -198,7 +198,6 @@ void	Response::setContentType()
 	if (dot_pos != std::string::npos)
 	{
 		std::string	extension = file_path.substr(dot_pos + 1);
-		std::map<std::string, std::string> content_types;
 		try
 		{
 			content_type = content_types.at(extension);
@@ -314,27 +313,23 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 	else
 		filesystem_path = root + request_path;
 
-	return (filesystem_path);
+	return ("." + filesystem_path);
 }
 
 void	Response::handleGetDirectory(std::string filesys_dir_path)
 {
 	// Check if the location has an index defined
 	std::string filesys_index_path = filesys_dir_path + _location->getIndex();
-	if (access(filesys_index_path.c_str(), F_OK) == 0)
+	struct stat fileStat;
+	if (access(filesys_index_path.c_str(), F_OK) == 0
+		&& stat(filesys_index_path.c_str(), &fileStat) == 0 
+		&& S_ISREG(fileStat.st_mode))
 	{
 		if (access(filesys_index_path.c_str(), R_OK) == 0)
-		{
-			// If it does, get the resource
-			// if (checkCGI())
-			//     executeCGI();
-			// else
 			return handleGetResource(filesys_index_path);
-		}
 		else
 			return setErrorResponse(403);
 	}
-
 	// Check if the location has autoindex activated
 	if (_location->getAutoindex()) // If it does, build simple autoindex
 		return buildAutoindex(filesys_dir_path);
@@ -413,7 +408,9 @@ void	Response::handleFileUpload()
 		content_type = _request->getHeaders().at("Content-Type");
 		if (content_type.find("multipart/form-data") == std::string::npos
 			&& content_type.find("multipart/mixed") == std::string::npos)
+		{
 			return setErrorResponse(400);
+		}
 	}
 	catch(const std::out_of_range& e)
 	{
@@ -431,7 +428,7 @@ void	Response::handleFileUpload()
 	// Create files with their respective filename and content
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
-		std::string file_path = upload_store + "/" + form_elements_filenames[i] + "_" + generateTimestamp();
+		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{
@@ -439,7 +436,9 @@ void	Response::handleFileUpload()
 			file.close();
 		}
 		else
+		{
 			return setErrorResponse(500);
+		}
 	}
 
 	// Build response

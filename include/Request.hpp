@@ -33,6 +33,13 @@ class Request
 		std::string							getPath();
 		std::map<std::string, std::string>	getQueryParams();
 
+		void								setLocations(std::vector<Location> locations);
+		void								setErrorCode(int error_code);
+		void								setMethod(std::string method);
+		void								setHeaders(std::map<std::string, std::string> headers);
+		void								setBody(std::string body);
+		void								setPath(std::string path);
+		void								setQueryParams(std::map<std::string, std::string> query_params);
 };
 
 #endif

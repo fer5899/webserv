@@ -17,10 +17,10 @@ class Client
 {
 	private:
 		int			_socket;
-		Server		&_server;
+		Server		_server;
 		Request		*_request;
 		Response	*_response;
-		int			_req_count;
+		// int			_req_count;
 
 	public:
 		Client(int socket, Server &server);
@@ -29,7 +29,7 @@ class Client
 		Request		*getRequest() const;
 		Response	*getResponse() const;
 		int			getSocket() const;
-		Server		&getServer() const;
+		Server		&getServer();
 
 		void		setRequest(Request *request);
 

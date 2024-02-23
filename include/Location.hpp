@@ -23,6 +23,7 @@ class Location
 
 
 	public:
+		Location();
 		Location(std::string path, std::string root, std::string alias, std::vector<std::string> methods, bool autoindex, std::string index, int redir_code, std::string redir_url, std::string upload_store, std::string cgi_path, std::string cgi_ext);
 		~Location();
 
@@ -37,6 +38,19 @@ class Location
 		std::string					getUploadStore();
 		std::string					getCgiPath();
 		std::string					getCgiExt();
+
+		void						setPath(std::string path);
+		void						setRoot(std::string root);
+		void						setAlias(std::string alias);
+		void						setMethods(std::vector<std::string> methods);
+		void						addMethod(std::string &method);
+		void						setAutoindex(bool autoindex);
+		void						setIndex(std::string index);
+		void						setRedirCode(int redir_code);
+		void						setRedirUrl(std::string redir_url);
+		void						setUploadStore(std::string upload_store);
+		void						setCgiPath(std::string cgi_path);
+		void						setCgiExt(std::string cgi_ext);
 
 };
 

@@ -84,13 +84,13 @@ Location	*Response::matchLocation()
 
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		loc_path = locations[i].getPath();
+		loc_path = _client->getServer().getLocation(i).getPath();
 		if (loc_path.size() <= req_path.size())
 		{
 			if (req_path.compare(0, loc_path.size(), loc_path) == 0
 				&& loc_path.size() > max_loc_size)
 			{
-				matched_loc = &locations[i];
+				matched_loc = &(_client->getServer().getLocation(i));
 				max_loc_size = loc_path.size();
 			}
 		}
@@ -153,7 +153,7 @@ void	Response::setDateServer()
 	struct tm		*tm;
 
 	gettimeofday(&tv, NULL);
-	tm = gmtime(&tv.tv_sec);
+	tm = localtime(&tv.tv_sec);
 	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
 	std::string date = std::string(buffer);
 

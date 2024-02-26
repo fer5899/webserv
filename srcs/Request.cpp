@@ -1,12 +1,12 @@
 #include "../include/Request.hpp"
 
-RequestHandler::RequestHandler(/*Client &client*/) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
+Request::Request() : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
 {}
 
-RequestHandler::~RequestHandler()
+Request::~Request()
 {}
 
-RequestHandler& RequestHandler::operator=(const RequestHandler& other)
+Request& Request::operator=(const Request& other)
 {
 	if (this != &other)
 	{
@@ -24,50 +24,50 @@ RequestHandler& RequestHandler::operator=(const RequestHandler& other)
 	return *this;
 }
 
-RequestHandler::RequestHandler(const RequestHandler& other) : _path(other._path), _method(other._method), _version(other._version), _headers(other._headers), _body(other._body), _errorCode(other._errorCode), _buffer(other._buffer), _size(other._size), _bodySize(other._bodySize) , _state(other._state){}
+Request::Request(const Request& other) : _path(other._path), _method(other._method), _version(other._version), _headers(other._headers), _body(other._body), _errorCode(other._errorCode), _buffer(other._buffer), _size(other._size), _bodySize(other._bodySize) , _state(other._state){}
 
-std::map<std::string, std::string>	RequestHandler::getHeaders() const
+std::map<std::string, std::string>	Request::getHeaders() const
 {
 	return _headers;
 }
 
-std::string	RequestHandler::getMethod() const
+std::string	Request::getMethod() const
 {
 	return _method;
 }
 
-std::string	RequestHandler::getURL() const
+std::string	Request::getURL() const
 {
 	return _path;
 }
 
-std::string	RequestHandler::getHTTPVersion() const
+std::string	Request::getHTTPVersion() const
 {
 	return _version;
 }
 
-std::string	RequestHandler::getBody() const
+std::string	Request::getBody() const
 {
 	return _body;
 }
 
-void	RequestHandler::setErrorCode(int errorCode)
+void	Request::setErrorCode(int errorCode)
 {
 	_errorCode = errorCode;
 }
 
-int		RequestHandler::getErrorCode() const
+int		Request::getErrorCode() const
 {
 	return _errorCode;
 }
 
-bool	RequestHandler::keepAlive() const
+bool	Request::keepAlive() const
 {
 	std::map<std::string, std::string>::const_iterator it = _headers.find("Connection");
 	return (it != _headers.end() && it->second == "keep-alive");
 }
 
-bool RequestHandler::parseFirstLine(std::string& line)
+bool Request::parseFirstLine(std::string& line)
 {
 	std::vector<std::string> tokens = split(line, ' ');
 	if (tokens.size() != 3)
@@ -93,13 +93,13 @@ bool RequestHandler::parseFirstLine(std::string& line)
 	return false;
 }
 
-bool RequestHandler::parseHeaders(std::string& line)
+bool Request::parseHeaders(std::string& line)
 {
 	if (line.empty())
 	{
 		if (_method == "POST")
 			return parseBodyRequisites();
-		// return true; // Se podria dejar si aceptamos que manden solicitudes get con body o cosas asi y no lanzar el error 400
+		return true;
 	}
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
@@ -113,7 +113,7 @@ bool RequestHandler::parseHeaders(std::string& line)
 	return false;
 }
 
-bool RequestHandler::parseBodyRequisites()
+bool Request::parseBodyRequisites()
 {
 	if (_headers.find("Content-Type") == _headers.end())
 	{
@@ -125,7 +125,7 @@ bool RequestHandler::parseBodyRequisites()
 	validTypes.push_back("multipart/form-data");
 	validTypes.push_back("text/plain");
 	validTypes.push_back("application/json");
-//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL
+	//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL (FER)
 	validTypes.push_back("application/xml");
 	validTypes.push_back("application/octet-stream");
 	validTypes.push_back("text/html");
@@ -160,10 +160,10 @@ bool RequestHandler::parseBodyRequisites()
 	return false;
 }
 
-bool RequestHandler::parseBody(std::string& line)
+bool Request::parseBody(std::string& line)
 {
 	_body += line;
-	_bodySize -= line.size() - countNewlines(line);
+	_bodySize -= line.size() - countSubstring(line, "\n") - countSubstring(line, "\r");
 	if (_bodySize < 0)
 	{
 		_errorCode = 413;
@@ -176,7 +176,7 @@ bool RequestHandler::parseBody(std::string& line)
 	return false;
 }
 
-bool RequestHandler::parseRequest(std::string& request)
+bool Request::parseRequest(std::string& request)
 {
 	int request_size = request.size();
 	if (request_size  == 0)
@@ -184,19 +184,23 @@ bool RequestHandler::parseRequest(std::string& request)
 		_errorCode = 400;
 		return true;
 	}
-	_size += request_size - countNewlines(request); // Incluir salto de carro en countNewLines
+	_size += request_size - countSubstring(request, "\n") - countSubstring(request, "\r");
 	if (_size > MAX_REQUEST_SIZE)
 	{
 		_errorCode = 413;
 		return true;
 	}
-	std::string::size_type pos = request.find("\n"); // Incluir salto de carro
+	std::string::size_type pos = request.find("\n");
 	while (pos != std::string::npos && _state < 2)
 	{
-		
+		if (pos > 0 && request[pos - 1] == '\r')
+			pos--;
 		std::string line = _buffer + request.substr(0, pos);
 		_buffer = "";
-		request.erase(0, pos + 2);
+		if (request[pos] == '\r')
+			request.erase(0, pos + 2);
+		else
+			request.erase(0, pos + 1);
 		if (_state == 0)
 		{
 			if (parseFirstLine(line))
@@ -207,7 +211,7 @@ bool RequestHandler::parseRequest(std::string& request)
 			if (parseHeaders(line))
 				return true;
 		}
-		pos = request.find("\n"); // Incluir salto de carro
+		pos = request.find("\n");
 	}
 	if (_state == 2)
 	{
@@ -218,29 +222,29 @@ bool RequestHandler::parseRequest(std::string& request)
 	return false;
 }
 
-std::ostream& operator<<(std::ostream& os, const RequestHandler& requestHandler)
+std::ostream& operator<<(std::ostream& os, const Request& Request)
 {
-	if (requestHandler.getErrorCode() != 0)
+	if (Request.getErrorCode() != 0)
 	{
-		os << RED "Error code: " RESET << requestHandler.getErrorCode() << std::endl;
+		os << RED "Error code: " RESET << Request.getErrorCode() << std::endl;
 		return os;
 	}
 	os << "--------------------------------" << std::endl;
-	os << BLUE "Method: " RESET << requestHandler.getMethod() << std::endl;
-	os << BLUE "URL: " RESET << requestHandler.getURL() << std::endl;
-	os << BLUE "HTTP version: " RESET << requestHandler.getHTTPVersion() << std::endl;
-	os << BLUE "Keep-Alive: " RESET << (requestHandler.keepAlive() ? "true" : "false") << std::endl;
+	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;
+	os << BLUE "URL: " RESET << Request.getURL() << std::endl;
+	os << BLUE "HTTP version: " RESET << Request.getHTTPVersion() << std::endl;
+	os << BLUE "Keep-Alive: " RESET << (Request.keepAlive() ? "true" : "false") << std::endl;
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Headers:" RESET << std::endl;
-	std::map<std::string, std::string> headers = requestHandler.getHeaders();
+	std::map<std::string, std::string> headers = Request.getHeaders();
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
 	{
 		os << CYAN << it->first << ": " RESET << it->second << std::endl;
 	}
-	if (requestHandler.getBody().size() > 0)
+	if (Request.getBody().size() > 0)
 	{
 		os << "--------------------------------" << std::endl;
-		os << BLUE "Body: " RESET << std::endl << requestHandler.getBody() << std::endl;
+		os << BLUE "Body: " RESET << std::endl << Request.getBody() << std::endl;
 	}
 	os << "--------------------------------" << std::endl;
 	return os;

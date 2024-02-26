@@ -5,5 +5,5 @@
 
 
 
-std::vector<std::string> split(const std::string &s, char delimiter);
-int countNewlines(const std::string& text);
+std::vector<std::string>	split(const std::string &s, char delimiter);
+int							countSubstring(const std::string& str, const std::string& sub);

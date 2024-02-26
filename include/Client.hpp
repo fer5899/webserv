@@ -2,6 +2,7 @@
 #define CLIENT_HPP
 
 #include "Server.hpp"
+#include "Request.hpp"
 
 class Client
 {
@@ -10,13 +11,14 @@ class Client
 		~Client();
 
 		int getSocket() const;
+		Request *getRequest() const;
+		void setRequest(void);
 		
 	private:
 		Server _server;
 		int _socket;
-		//Request *_request;
-		//Response *_response;
-
+		Request *_Request;
+		//Response _response;
 };
 
 #endif

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebServ School Project</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0; /* Background color */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .container {
+            text-align: center;
+            color: #333; /* Text color */
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #4CAF50; /* Header color */
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+
+        .feature {
+            flex-basis: 30%;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease; /* Add transition */
+        }
+
+        .feature:hover {
+            transform: scale(1.05); /* Zoom effect on hover */
+        }
+
+        .feature h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .feature p {
+            font-size: 1em;
+            line-height: 1.5;
+            color: #666; /* Feature description color */
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: right;
+            padding: 5px;
+            font-size: 10px;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to WebServ Project</h1>
+        <p>This is the home page of our WebServ school project. Click on each section to learn more:</p>
+        <div class="features">
+            <a href="/post-request">
+                <div class="feature">
+                    <h2>POST Request</h2>
+                    <p>Explore how to handle POST requests in web applications, including form submissions and data processing on the server side.</p>
+                </div>
+            </a>
+            <a href="/get-request">
+                <div class="feature">
+                    <h2>GET Request</h2>
+                    <p>Learn about handling GET requests, including retrieving data from servers, querying APIs, and passing parameters through URLs.</p>
+                </div>
+            </a>
+            <a href="/other-request">
+                <div class="feature">
+                    <h2>Other Requests</h2>
+                    <p>Discover various types of HTTP requests beyond GET and POST, including PUT, DELETE, PATCH, and more.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
+    </footer>
+</body>
+
+</html>

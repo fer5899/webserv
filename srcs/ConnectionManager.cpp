@@ -27,7 +27,7 @@ void ConnectionManager::runServers()
 	
 	while (1)
 	{
-		std::cout << "Count: " << this->_count++ << "\n";
+		// std::cout << "Count: " << this->_count++ << "\n";
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
 
@@ -55,49 +55,56 @@ void ConnectionManager::runServers()
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
 				this->addClient(Client(getServerBySocket(i), new_socket));
-				std::cout << "New client added: " << new_socket << std::endl;
+				// std::cout << "New client added: " << new_socket << std::endl;
 			}
 
 			// Read from client sockets
 			else if (FD_ISSET(i, &read_sockets_copy))
 			{
-				std::string httpRequest;
-				// Right now it is a loop for example porpuses
-				/* I should read the request on chunks and send it to the 
-					httpresponse parser, and when it tells me that the 
-					request is complete, I should could the connectionm, 
-					build the response and change the fd from read to write */
-				while (true)
+				Client *client = this->getClientBySocket(i);
+				if (client == NULL)
 				{
-					char buffer[BUFFER_SIZE];
-					ssize_t bytesRead = recv(i, buffer, BUFFER_SIZE - 1, 0);
-					if (bytesRead == -1)
+					std::cerr << "Client not found" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+		
+				if (client->getRequest() == NULL)
+				{
+					client->setRequest();	
+				}
+				
+				char buffer[BUFFER_SIZE];
+				ssize_t bytesRead = recv(i, buffer, BUFFER_SIZE - 1, 0);
+				if (bytesRead == -1)
+				{
+					std::cerr << "recv error: " << strerror(errno) << std::endl;
+					close(i);
+					FD_CLR(i, &this->_read_sockets);
+					this->removeClient(i);
+				}
+				else if (bytesRead == 0)
+				{
+					std::cout << "bytesRead == 0, closing connection" << std::endl;
+					close(i);
+					FD_CLR(i, &this->_read_sockets);
+					this->removeClient(i);
+				}
+				else
+				{
+					buffer[bytesRead] = '\0';
+					std::string buffer_str(buffer);
+					std::cout << "Received: " << std::endl;
+					std::cout << buffer_str << std::endl;
+					
+					// Now we pass the buffer to the request handler and check if the request is complete
+					if (client->getRequest()->parseRequest(buffer_str))
 					{
-						std::cerr << "recv error: " << strerror(errno) << std::endl;
-						close(i);
-						FD_CLR(i, &this->_read_sockets);
-						break;
-					}
-					else if (bytesRead == 0 && httpRequest.empty())
-					{
-						std::cout << "bytesRead == 0, closing connection" << std::endl;
-						close(i);
-						FD_CLR(i, &this->_read_sockets);
-						break;
-					}
-					else if (bytesRead < BUFFER_SIZE - 1) 
-					{
-						buffer[bytesRead] = '\0';
-						httpRequest += buffer;
-						std::cout << "Received complete HTTP Request:\n" << httpRequest << std::endl;
+						std::cout << std::endl;
+						std::cout << "-----Received complete HTTP Request: " << std::endl;
+						std::cout << *(client->getRequest()) << std::endl;
+
 						FD_CLR(i, &this->_read_sockets);
 						FD_SET(i, &this->_write_sockets);
-						break;
-					}
-					else 
-					{
-						buffer[bytesRead] = '\0';
-						httpRequest += buffer;
 					}
 				}
 			}
@@ -112,11 +119,13 @@ void ConnectionManager::runServers()
 					std::cerr << "send error: " << strerror(errno) << std::endl;
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					this->removeClient(i);
 				}
 				else if (bytesSent == 0)
 				{
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					this->removeClient(i);
 				}
 				else 
 				{
@@ -125,6 +134,7 @@ void ConnectionManager::runServers()
 					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
 					std::cout << "Connection closed" << std::endl;
+					std::cout << std::endl;
 				}
 			}
 		}
@@ -181,13 +191,15 @@ Server ConnectionManager::getServerBySocket(int socket) const
 	return Server(0);
 }
 
-Client ConnectionManager::getClientBySocket(int socket) const
+Client *ConnectionManager::getClientBySocket(int socket)
 {
-	for (std::vector<Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
+	for (unsigned long i = 0; i < this->_clients.size(); i++)
 	{
-		if (it->getSocket() == socket)
-			return *it;
+		if (this->_clients[i].getSocket() == socket)
+		{
+			Client *c = &(this->_clients[i]);
+			return c;
+		}
 	}
-	return Client(Server(0), 0);
+	return NULL;
 }
-

@@ -197,7 +197,6 @@ Server ConnectionManager::getServerBySocket(int socket) const
 }
 
 Client *ConnectionManager::getClientBySocket(int socket)
-Client *ConnectionManager::getClientBySocket(int socket)
 {
 	for (unsigned long i = 0; i < this->_clients.size(); i++)
 	{

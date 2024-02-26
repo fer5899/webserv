@@ -28,6 +28,7 @@ void ConnectionManager::runServers()
 	while (1)
 	{
 		// std::cout << "Count: " << this->_count++ << "\n";
+		// std::cout << "Count: " << this->_count++ << "\n";
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
 
@@ -55,6 +56,7 @@ void ConnectionManager::runServers()
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
 				this->addClient(Client(getServerBySocket(i), new_socket));
+				// std::cout << "New client added: " << new_socket << std::endl;
 				// std::cout << "New client added: " << new_socket << std::endl;
 			}
 
@@ -120,11 +122,13 @@ void ConnectionManager::runServers()
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
+					this->removeClient(i);
 				}
 				else if (bytesSent == 0)
 				{
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					this->removeClient(i);
 					this->removeClient(i);
 				}
 				else 
@@ -134,6 +138,7 @@ void ConnectionManager::runServers()
 					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
 					std::cout << "Connection closed" << std::endl;
+					std::cout << std::endl;
 					std::cout << std::endl;
 				}
 			}
@@ -191,6 +196,7 @@ Server ConnectionManager::getServerBySocket(int socket) const
 	return Server(0);
 }
 
+Client *ConnectionManager::getClientBySocket(int socket)
 Client *ConnectionManager::getClientBySocket(int socket)
 {
 	for (unsigned long i = 0; i < this->_clients.size(); i++)

@@ -104,7 +104,8 @@ bool Request::parseHeaders(std::string& line)
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
 	{
-		_errorCode = 400;
+		if (!line.empty())
+			_errorCode = 400;
 		return true;
 	}
 	std::string key = line.substr(0, pos);

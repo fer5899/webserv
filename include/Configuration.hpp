@@ -17,7 +17,7 @@ class Configuration
 		void printConfig();
 	
 	private:
-		std::vector<ServerConfig> _servers;
+		std::vector<ServerConfig > _servers;
 
 };
 

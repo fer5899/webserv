@@ -31,12 +31,12 @@ void LocationConfig::parseLocationConfig(std::string line)
 	//std::cout << line << std::endl;
 
 	std::istringstream iss(line);
-	if(line.find("methods") != std::string::npos)
+	if(line.find("allow_methods") != std::string::npos)
 	{
 		std::string word;
 		while(iss >> word)
 		{
-			if (word == "methods")
+			if (word == "allow_methods")
 				continue;
 			_methods.push_back(word);
 		}
@@ -75,19 +75,19 @@ void LocationConfig::printLocationConfig()
 {
 	for (std::map<std::string, std::string>::iterator it = _locConfig.begin(); it != _locConfig.end(); it++)
 	{
-		std::cout << "----" << it->first << " " << it->second << std::endl;
+		std::cout << "---- " << it->first << " - " << it->second << std::endl;
 	}
-	std::cout << "Methods: " << std::endl;
+	std::cout << "----Methods: " << std::endl;
 	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
 	{
-		std::cout <<"----" <<  *it << std::endl;
+		std::cout <<"---- " <<  *it << std::endl;
 	}
-	std::cout << "CgiPath: " << std::endl;
+	std::cout << "----CgiPath: " << std::endl;
 	for (std::vector<std::string>::iterator it = _cgiPath.begin(); it != _cgiPath.end(); it++)
 	{
-		std::cout <<"----" <<  *it << std::endl;
+		std::cout <<"---- " <<  *it << std::endl;
 	}
-	std::cout << "CgiExt: " << std::endl;
+	std::cout << "----CgiExt: " << std::endl;
 	for (std::vector<std::string>::iterator it = _cgiExt.begin(); it != _cgiExt.end(); it++)
 	{
 		std::cout <<"----" <<  *it << std::endl;

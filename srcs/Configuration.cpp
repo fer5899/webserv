@@ -207,60 +207,70 @@ void Configuration::parseConfigFile(std::string filename)
 
 	while (std::getline(file, line))
 	{
-		if (line.empty())
-			continue;
 		// remove comments
 		if (line.find("#") != std::string::npos)
 			line = line.substr(0, line.find("#"));
-		if (line.find("server") != std::string::npos && countWords(line) == 1)
+		if (line.empty() || countWords(line) == 0)
+			continue;
+		else
 		{
-			isServer = true;
-			while(isServer)
+			if (line.find("server") != std::string::npos && countWords(line) == 1)
 			{
-				isServer = false;
-				// std::cout << "------------ server found " << std::endl;
-				ServerConfig server;
-				_servers.push_back(server);
-				std::getline(file, line);
-				while(std::getline(file, line))
+				isServer = true;
+				while(isServer)
 				{
-					if (line.empty())
-						continue;
-					if (line.find("#") != std::string::npos)
-						line = line.substr(0, line.find("#"));
-					if (line.find(";") != std::string::npos)
-						line = line.substr(0, line.find(";"));
-					_servers.back().parseServerConfig(line);
-					if (line.find("server") != std::string::npos && countWords(line) == 1)
+					isServer = false;
+					// std::cout << "------------ server found " << std::endl;
+					ServerConfig server;
+					_servers.push_back(server);
+					std::getline(file, line);
+					while(std::getline(file, line))
 					{
-						isServer = true;
-						break;
-					}
-					else if (line.find("location") != std::string::npos)
-					{
-						isLocation = true;
-						while(isLocation)
+						//remove comments
+						if (line.find("#") != std::string::npos)
+								line = line.substr(0, line.find("#"));
+						if (line.empty() || countWords(line) == 0)
+							continue;
+						else 
 						{
-							isLocation = false;
-							// std::cout << "------------ location found " << std::endl;
-							LocationConfig location;
-							_servers.back().addLocation(location);
-							std::getline(file, line);
-							while(std::getline(file, line))
+							
+							if (line.find("server") != std::string::npos && countWords(line) == 1)
 							{
-								if (line.find("}") != std::string::npos)
+								isServer = true;
+								break;
+							}
+							else if (line.find("location") != std::string::npos)
+							{
+								isLocation = true;
+								while(isLocation)
 								{
 									isLocation = false;
-									break;
+									// std::cout << "------------ location found " << std::endl;
+									LocationConfig location;
+									_servers.back().addLocation(location);
+									_servers.back().getLocations().back().setPath(line);
+									std::getline(file, line);
+									while(std::getline(file, line))
+									{
+										// std::cout << " line: " << line << std::endl;
+										// remove comments
+										if (line.find("#") != std::string::npos)
+											line = line.substr(0, line.find("#"));
+										if (line.empty() || countWords(line) == 0)
+											continue;
+										else 
+										{
+											if (line.find("}") != std::string::npos)
+											{
+												isLocation = false;
+												break;
+											}
+											_servers.back().getLocations().back().parseLocationConfig(line);
+										}
+									}
 								}
-								if (line.empty())
-									continue;
-								if (line.find("#") != std::string::npos)
-									line = line.substr(0, line.find("#"));
-								if (line.find(";") != std::string::npos)
-									line = line.substr(0, line.find(";"));
-								_servers.back().getLocations().back().parseLocationConfig(line);
 							}
+							_servers.back().parseServerConfig(line);
 						}
 					}
 				}
@@ -309,5 +319,6 @@ void Configuration::printConfig()
 	{
 		std::cout << "Server " << i << std::endl;
 		_servers[i].printServerConfig();
+		std::cout << std::endl;
 	}
 }

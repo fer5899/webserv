@@ -29,7 +29,14 @@ int countWords(std::string line);
 void ServerConfig::parseServerConfig(std::string line)
 {
 	// std::cout << line << std::endl;
-	
+	if (line.find(";") != std::string::npos)
+		line = line.substr(0, line.find(";"));
+	else if (line.find("}") == std::string::npos && line.find("location") == std::string::npos)
+	{
+		std::cerr << RED "Error: Invalid line - semicolon: " << line << RESET << std::endl;
+		exit(1);
+	}
+
 	std::istringstream iss(line);
 	if (line.find("error_page") != std::string::npos)
 	{
@@ -68,12 +75,11 @@ void ServerConfig::printServerConfig()
 	{
 		std::cout <<"-- " <<  it->first << " - " << it->second << std::endl;
 	}
-	std::cout << "--Error pages:   " << _error_page.size() << std::endl;
+	std::cout << "--> Error pages:   " << _error_page.size() << std::endl;
 	for (long unsigned int i = 0; i < _error_page.size(); i++)
 	{
-		std::cout << "---- " << _error_page[i] << std::endl;
+		std::cout << "  -- " << _error_page[i] << std::endl;
 	}
-	std::cout << "--Locations: " << std::endl;
 	for (std::vector<LocationConfig>::iterator it = _locations.begin(); it != _locations.end(); it++)
 	{
 		it->printLocationConfig();

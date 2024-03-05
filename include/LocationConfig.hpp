@@ -12,9 +12,11 @@ class LocationConfig
 
 		void parseLocationConfig(std::string line);
 		void printLocationConfig();
+		void setPath(std::string line);
 	
 	private:
 		std::map<std::string, std::string> _locConfig;
+		std::string _path;
 		std::vector<std::string> _methods;
 		std::vector<std::string> _cgiPath;
 		std::vector<std::string> _cgiExt;

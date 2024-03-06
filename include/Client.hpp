@@ -1,25 +1,40 @@
 #ifndef CLIENT_HPP
-#define CLIENT_HPP
+# define CLIENT_HPP
 
-#include "Server.hpp"
-#include "Request.hpp"
-#include "Request.hpp"
+# include "Server.hpp"
+# include "Request.hpp"
+# include "Response.hpp"
+
+class Request;
+
+class Response;
 
 class Client
 {
+	private:
+		int			_socket;
+		Server		*_server;
+		Request		*_request;
+		Response	*_response;
+		// int			_req_count;
+
 	public:
-		Client(Server server, int socket);
+		Client(Server *server, int socket);
+		Client(const Client &other);
+		Client &operator=(const Client &other);
 		~Client();
 
-		int getSocket() const;
-		Request *getRequest() const;
-		void setRequest(void);
-		
-	private:
-		Server _server;
-		int _socket;
-		Request *_Request;
-		//Response _response;
+		Request		*getRequest();
+		Response	*getResponse();
+		int			getSocket() const;
+		Server		*getServer();
+
+		void		setRequest(Request *request);
+		void		setResponse(Response *response);
+
 };
 
 #endif
+
+
+

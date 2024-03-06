@@ -40,7 +40,7 @@ class Response
 		std::string	generateTimestamp();
 		void		parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents);
 		Location	*matchLocation();
-		void		setContentType();
+		void		setContentType(std::string filesys_path);
 		void		setDateServer();
 		void		setErrorResponse(int status);
 		void		setRedirection();

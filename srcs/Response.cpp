@@ -139,6 +139,7 @@ void	Response::handleGetResource(std::string filesys_path)
 		// Read contents of the file into response body if it's a file
 		if (S_ISREG(fileStat.st_mode))
 		{
+			std::cout << "Filepath corresponds to a file" << std::endl;
 			std::ifstream stream(filesys_path);
 			std::stringstream buffer;
 			if (stream.is_open())
@@ -158,7 +159,7 @@ void	Response::handleGetResource(std::string filesys_path)
 
 	// Build http_response
 	_status = "HTTP/1.1 200 OK\r\n";
-	setContentType();
+	setContentType(filesys_path);
 	_headers_str.append("Content-Length: " + numberToString(_body.size()) + "\r\n");
 	_http_response = _status + _headers_str + "\r\n" + _body + "\r\n";
 	
@@ -180,7 +181,7 @@ void	Response::setDateServer()
 
 }
 
-void	Response::setContentType()
+void	Response::setContentType(std::string filesys_path)
 {
 	std::map<std::string, std::string> content_types;
 	content_types["html"] = "text/html"; 
@@ -211,11 +212,10 @@ void	Response::setContentType()
 	content_types["csv"] = "text/csv";
 
 	std::string		content_type;
-	std::string		file_path = _request->getPath();
-	size_t			dot_pos = file_path.find_last_of('.');
+	size_t			dot_pos = filesys_path.find_last_of('.');
 	if (dot_pos != std::string::npos)
 	{
-		std::string	extension = file_path.substr(dot_pos + 1);
+		std::string	extension = filesys_path.substr(dot_pos + 1);
 		try
 		{
 			content_type = content_types.at(extension);
@@ -337,12 +337,14 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 void	Response::handleGetDirectory(std::string filesys_dir_path)
 {
 	// Check if the location has an index defined
-	std::string filesys_index_path = filesys_dir_path + _location->getIndex();
+	std::string filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
+	std::cout << "Index path: " << filesys_index_path << std::endl;
 	struct stat fileStat;
 	if (access(filesys_index_path.c_str(), F_OK) == 0
 		&& stat(filesys_index_path.c_str(), &fileStat) == 0 
 		&& S_ISREG(fileStat.st_mode))
 	{
+		std::cout << "Index exists" << std::endl;
 		if (access(filesys_index_path.c_str(), R_OK) == 0)
 			return handleGetResource(filesys_index_path);
 		else

@@ -9,6 +9,7 @@
 class ConnectionManager
 {
 	public:
+		ConnectionManager();
 		ConnectionManager(std::vector<Server> servers);
 		~ConnectionManager();
 	
@@ -24,6 +25,7 @@ class ConnectionManager
 	
 		void initSets();
 		bool isServerSocket(int socket) const;
+		void addServer(Server &server);
 		void addClient(Client &client);
 		void removeClient(int socket);
 		Server *getServerBySocket(int socket);

@@ -2,6 +2,13 @@
 #include "../include/Server.hpp"
 #include "../include/Client.hpp"
 
+ConnectionManager::ConnectionManager()
+{
+	this->_servers = std::vector<Server>();
+	this->_max_socket = 0;
+	this->_count = 0;
+}
+
 ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 
 {
 	this->_max_socket = 0;
@@ -169,6 +176,11 @@ bool ConnectionManager::isServerSocket(int socket) const
 			return true;
 	}
 	return false;
+}
+
+void ConnectionManager::addServer(Server &server)
+{
+	this->_servers.push_back(server);
 }
 
 void ConnectionManager::addClient(Client &client)

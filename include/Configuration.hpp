@@ -15,6 +15,8 @@ class Configuration
 		void checkConfigFile(std::string filename);
 		void parseConfigFile(std::string filename);
 		void printConfig();
+
+		std::vector<ServerConfig > &getServers();
 	
 	private:
 		std::vector<ServerConfig > _servers;

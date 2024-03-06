@@ -12,11 +12,13 @@
 # include <arpa/inet.h>
 # include <fcntl.h>
 # include "Location.hpp"
+# include "ServerConfig.hpp"
 
 class Server
 {
 	public:
 		Server();
+		Server(ServerConfig &config);
 		Server(int port);
 		Server(const Server &other);
 		Server &operator=(const Server &other);
@@ -55,6 +57,8 @@ class Server
 		std::vector<Location>		_locations;
 		std::string					_root; // must be abspath
 		std::string					_index; // cannot be a directory, cannot start with /
+
+		void						buildLocations(std::vector<LocationConfig > &location_configs)
 };
 
 #endif

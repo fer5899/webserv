@@ -9,6 +9,14 @@ ConnectionManager::ConnectionManager()
 	this->_count = 0;
 }
 
+ConnectionManager::ConnectionManager(Configuration &config)
+{
+	this->_max_socket = 0;
+	this->_count = 0;
+	this->_servers = std::vector<Server>();
+	buildServers(config.getServers());
+}
+
 ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 
 {
 	this->_max_socket = 0;
@@ -22,6 +30,15 @@ void ConnectionManager::setUpServers()
 	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 	{
 		it->setUpServer();
+	}
+}
+
+void ConnectionManager::buildServers(std::vector<ServerConfig > &server_configs)
+{
+	for (size_t i = 0; i < server_configs.size(); i++)
+	{
+		Server server = Server(server_configs[i]);
+		this->addServer(server);
 	}
 }
 

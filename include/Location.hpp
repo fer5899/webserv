@@ -5,6 +5,7 @@
 # include <iostream>
 # include <map>
 # include <vector>
+# include "LocationConfig.hpp"
 
 class Location
 {
@@ -24,6 +25,7 @@ class Location
 
 	public:
 		Location();
+		Location(LocationConfig &config);
 		Location(std::string path, std::string root, std::string alias, std::vector<std::string> methods, bool autoindex, std::string index, int redir_code, std::string redir_url, std::string upload_store, std::string cgi_path, std::string cgi_ext);
 		Location(const Location &other);
 		Location &operator=(const Location &other);
@@ -38,8 +40,8 @@ class Location
 		int							getRedirCode();
 		std::string					getRedirUrl();
 		std::string					getUploadStore();
-		std::string					getCgiPath();
-		std::string					getCgiExt();
+		std::vector<std::string >	getCgiPath();
+		std::vector<std::string >	getCgiExt();
 
 		void						setPath(std::string path);
 		void						setRoot(std::string root);

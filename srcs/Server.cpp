@@ -23,6 +23,19 @@ Server::Server(int port) : _port(port)
 	_index = "";
 }
 
+Server::Server(ServerConfig &config)
+{
+	_server_name = config.getServerName();
+	_port = config.getPort();
+	_error_page = config.getErrorPage();
+	_max_body_size = config.getMaxBodySize();
+	_server_socket = 0;
+	_root = config.getRoot();
+	_index = config.getIndex();
+	_locations = std::vector<Location>();
+	buildLocations(config.getLocations());
+}
+
 Server::Server(const Server &other)
 {
 	*this = other;
@@ -44,6 +57,15 @@ Server &Server::operator=(const Server &other)
 
 Server::~Server()
 {
+}
+
+void	Server::buildLocations(std::vector<LocationConfig> &location_configs)
+{
+	for (size_t i = 0; i < location_configs.size(); i++)
+	{
+		Location location = Location(location_configs[i]);
+		this->addLocation(location);
+	}
 }
 
 void Server::setUpServer()

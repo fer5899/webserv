@@ -15,6 +15,21 @@ Location::Location()
 	_cgi_ext = "";
 }
 
+Location::Location(LocationConfig &config)
+{
+	_path = config.getPath();
+	_root = config.getRoot();
+	_alias = config.getAlias();
+	_methods = config.getMethods();
+	_autoindex = config.getAutoindex();
+	_index = config.getIndex();
+	_redir_code = config.getRedirCode();
+	_redir_url = config.getRedirUrl();
+	_upload_store = config.getUploadStore();
+	_cgi_path = config.getCgiPath();
+	_cgi_ext = config.getCgiExt();
+}
+
 Location::Location(std::string path, std::string root, std::string alias, std::vector<std::string> methods, bool autoindex, std::string index, int redir_code, std::string redir_url, std::string upload_store, std::string cgi_path, std::string cgi_ext)
 {
 	_path = path;

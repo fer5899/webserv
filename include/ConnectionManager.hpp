@@ -24,9 +24,9 @@ class ConnectionManager
 	
 		void initSets();
 		bool isServerSocket(int socket) const;
-		void addClient(Client client);
+		void addClient(Client &client);
 		void removeClient(int socket);
-		Server getServerBySocket(int socket) const;
+		Server *getServerBySocket(int socket);
 		Client *getClientBySocket(int socket);
 };
 

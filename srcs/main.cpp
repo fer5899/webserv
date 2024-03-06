@@ -5,6 +5,25 @@ int main()
 {
 	Server s1(4242);
 	Server s2(4243);
+	Location l1;
+	l1.setPath("/testing");
+	l1.setIndex("index.html");
+	l1.setAutoindex(true);
+	l1.addMethod("GET");
+
+	Location l2;
+	l2.setPath("/pages");
+	l2.setAutoindex(true);
+	l2.addMethod("GET");
+
+	Location l3;
+	l3.setPath("/");
+	l3.setAutoindex(true);
+	l3.addMethod("GET");
+
+	s1.addLocation(l1);
+	s1.addLocation(l2);
+	s1.addLocation(l3);
 	std::vector<Server> servers;
 	servers.push_back(s1);
 	servers.push_back(s2);

@@ -28,7 +28,6 @@ void ConnectionManager::runServers()
 	while (1)
 	{
 		// std::cout << "Count: " << this->_count++ << "\n";
-		// std::cout << "Count: " << this->_count++ << "\n";
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
 
@@ -41,7 +40,7 @@ void ConnectionManager::runServers()
 
 		for (int i = 0; i <= this->_max_socket; i++)
 		{
-			//New connections
+			// New connections
 			if (FD_ISSET(i, &read_sockets_copy) && this->isServerSocket(i))
 			{
 				int new_socket;
@@ -51,13 +50,12 @@ void ConnectionManager::runServers()
 					std::cerr << "Accept failed: " << strerror(errno) << std::endl;
 					exit(EXIT_FAILURE);
 				}
-				//std::cout << "New connection, socket fd is " << new_socket << std::endl;
+				std::cout << "New connection, socket fd is " << new_socket << std::endl;
 				FD_SET(new_socket, &this->_read_sockets);
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
-				this->addClient(Client(getServerBySocket(i), new_socket));
-				// std::cout << "New client added: " << new_socket << std::endl;
-				// std::cout << "New client added: " << new_socket << std::endl;
+				Client client = Client(this->getServerBySocket(i), new_socket);
+				this->addClient(client);
 			}
 
 			// Read from client sockets
@@ -72,7 +70,8 @@ void ConnectionManager::runServers()
 		
 				if (client->getRequest() == NULL)
 				{
-					client->setRequest();	
+					client->setRequest(new Request());
+					std::cout << "Request object created" << std::endl;
 				}
 				
 				char buffer[BUFFER_SIZE];
@@ -95,8 +94,6 @@ void ConnectionManager::runServers()
 				{
 					buffer[bytesRead] = '\0';
 					std::string buffer_str(buffer);
-					std::cout << "Received: " << std::endl;
-					std::cout << buffer_str << std::endl;
 					
 					// Now we pass the buffer to the request handler and check if the request is complete
 					if (client->getRequest()->parseRequest(buffer_str))
@@ -110,11 +107,21 @@ void ConnectionManager::runServers()
 					}
 				}
 			}
-			//Write to client sockets
+			// Write to client sockets
 			else if (FD_ISSET(i, &write_sockets_copy))
 			{
 				//std::cout << "Write to client socket" << std::endl;
-				const char* response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello, World!";
+				Client *client = this->getClientBySocket(i);
+				if (client == NULL)
+				{
+					std::cerr << "Client not found" << std::endl;
+					exit(EXIT_FAILURE);
+				}
+				client->setResponse(new Response(client, client->getRequest()));
+				std::cout << "Response ptr: " << client->getResponse() << std::endl;
+
+				const char* response = client->getResponse()->getHttpResponse().c_str();
+				std::cout << "Response: " << std::endl << response << std::endl;
 				ssize_t bytesSent = send(i, response, strlen(response), 0);
 				if (bytesSent == -1)
 				{
@@ -122,13 +129,11 @@ void ConnectionManager::runServers()
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
-					this->removeClient(i);
 				}
 				else if (bytesSent == 0)
 				{
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
-					this->removeClient(i);
 					this->removeClient(i);
 				}
 				else 
@@ -138,7 +143,6 @@ void ConnectionManager::runServers()
 					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
 					std::cout << "Connection closed" << std::endl;
-					std::cout << std::endl;
 					std::cout << std::endl;
 				}
 			}
@@ -169,7 +173,7 @@ bool ConnectionManager::isServerSocket(int socket) const
 	return false;
 }
 
-void ConnectionManager::addClient(Client client)
+void ConnectionManager::addClient(Client &client)
 {
 	this->_clients.push_back(client);
 }
@@ -186,17 +190,19 @@ void ConnectionManager::removeClient(int socket)
 	}
 }
 
-Server ConnectionManager::getServerBySocket(int socket) const
+Server *ConnectionManager::getServerBySocket(int socket)
 {
-	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); it++)
+	for (unsigned long i = 0; i < this->_servers.size(); i++)
 	{
-		if (it->getSocket() == socket)
-			return *it;
+		if (this->_servers[i].getSocket() == socket)
+		{
+			Server *s = &(this->_servers[i]);
+			return s;
+		}
 	}
-	return Server(0);
+	return NULL;
 }
 
-Client *ConnectionManager::getClientBySocket(int socket)
 Client *ConnectionManager::getClientBySocket(int socket)
 {
 	for (unsigned long i = 0; i < this->_clients.size(); i++)

@@ -71,7 +71,6 @@ void ConnectionManager::runServers()
 				if (client->getRequest() == NULL)
 				{
 					client->setRequest(new Request());
-					std::cout << "Request object created" << std::endl;
 				}
 				
 				char buffer[BUFFER_SIZE];
@@ -110,7 +109,6 @@ void ConnectionManager::runServers()
 			// Write to client sockets
 			else if (FD_ISSET(i, &write_sockets_copy))
 			{
-				//std::cout << "Write to client socket" << std::endl;
 				Client *client = this->getClientBySocket(i);
 				if (client == NULL)
 				{
@@ -118,10 +116,10 @@ void ConnectionManager::runServers()
 					exit(EXIT_FAILURE);
 				}
 				client->setResponse(new Response(client, client->getRequest()));
-				std::cout << "Response ptr: " << client->getResponse() << std::endl;
 
 				const char* response = client->getResponse()->getHttpResponse().c_str();
 				std::cout << "Response: " << std::endl << response << std::endl;
+
 				ssize_t bytesSent = send(i, response, strlen(response), 0);
 				if (bytesSent == -1)
 				{

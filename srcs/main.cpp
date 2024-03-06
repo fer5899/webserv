@@ -21,9 +21,16 @@ int main()
 	l3.setAutoindex(true);
 	l3.addMethod("GET");
 
+	Location l4;
+	l4.setPath("/testing/upload_store");
+	l4.setUploadStore("/testing/upload_store");
+	l4.addMethod("POST");
+	l4.addMethod("DELETE");
+
 	s1.addLocation(l1);
 	s1.addLocation(l2);
 	s1.addLocation(l3);
+	s1.addLocation(l4);
 	std::vector<Server> servers;
 	servers.push_back(s1);
 	servers.push_back(s2);

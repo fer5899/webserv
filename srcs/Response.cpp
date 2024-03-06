@@ -139,7 +139,6 @@ void	Response::handleGetResource(std::string filesys_path)
 		// Read contents of the file into response body if it's a file
 		if (S_ISREG(fileStat.st_mode))
 		{
-			std::cout << "Filepath corresponds to a file" << std::endl;
 			std::ifstream stream(filesys_path);
 			std::stringstream buffer;
 			if (stream.is_open())
@@ -338,13 +337,11 @@ void	Response::handleGetDirectory(std::string filesys_dir_path)
 {
 	// Check if the location has an index defined
 	std::string filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
-	std::cout << "Index path: " << filesys_index_path << std::endl;
 	struct stat fileStat;
 	if (access(filesys_index_path.c_str(), F_OK) == 0
 		&& stat(filesys_index_path.c_str(), &fileStat) == 0 
 		&& S_ISREG(fileStat.st_mode))
 	{
-		std::cout << "Index exists" << std::endl;
 		if (access(filesys_index_path.c_str(), R_OK) == 0)
 			return handleGetResource(filesys_index_path);
 		else
@@ -449,7 +446,7 @@ void	Response::handleFileUpload()
 	// Create files with their respective filename and content
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
-		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
+		std::string file_path = "." + upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{
@@ -458,6 +455,7 @@ void	Response::handleFileUpload()
 		}
 		else
 		{
+			std::cerr << "Error: Can't open file" << std::endl;
 			return setErrorResponse(500);
 		}
 	}

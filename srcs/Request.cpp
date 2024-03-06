@@ -148,7 +148,7 @@ bool Request::parseBodyRequisites()
 	if (_headers.find("Content-Length") != _headers.end())
 	{
 		try {
-			_bodySize = std::stod(_headers["Content-Length"]) + 1;
+			_bodySize = std::stod(_headers["Content-Length"]); // PORQUÉ? + 1;
 		}
 		catch (std::exception &e)
 		{
@@ -163,7 +163,7 @@ bool Request::parseBodyRequisites()
 bool Request::parseBody(std::string& line)
 {
 	_body += line;
-	_bodySize -= line.size() - countSubstring(line, "\n") - countSubstring(line, "\r");
+	_bodySize -= line.size(); // PORQUÉ? - countSubstring(line, "\n") - countSubstring(line, "\r");
 	if (_bodySize < 0)
 	{
 		_errorCode = 413;

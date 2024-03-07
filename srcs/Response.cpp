@@ -32,7 +32,7 @@ Response::~Response()
 
 bool	Response::isCGI()
 {
-	return !_location-> CgiPath().empty() && !_location->getCgiExt().empty();
+	return !_location->getCgiPath().empty() && !_location->getCgiExt().empty();
 }
 
 void	Response::setCGIHeaders()

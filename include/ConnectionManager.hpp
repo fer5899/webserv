@@ -3,6 +3,7 @@
 
 #include "Server.hpp"
 #include "Client.hpp"
+#include <cstdlib>
 
 #define BUFFER_SIZE 4000
 

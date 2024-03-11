@@ -11,6 +11,8 @@
 # include <sys/stat.h>
 # include <dirent.h>
 # include <unistd.h>
+# include <ctime>
+# include <iomanip>
 # include "Request.hpp"
 # include "Client.hpp"
 
@@ -45,8 +47,6 @@ class Response
 		void		setErrorResponse(int status);
 		void		setRedirection();
 		bool		checkValidMethod();
-		bool		checkCGI();
-		void		executeCGI();
 		void		handleGetDirectory(std::string filesys_dir_path);
 		void		handleGetResource(std::string filesys_path);
 		void		handleFileUpload();
@@ -56,6 +56,10 @@ class Response
 		void		buildSimpleErrorPage();
 		void		buildStatus(int status);
 		void		buildHttpResponse();
+		bool		isCGI();
+		void		handleCGI();
+		void		setCGIHeaders();
+		void		setCGIEnv();
 
 	public:
 		Response(Client *client, Request *request);

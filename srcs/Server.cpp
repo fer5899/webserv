@@ -33,7 +33,7 @@ Server::Server(ServerConfig &config)
 	_root = config.getRoot();
 	_index = config.getIndex();
 	_locations = std::vector<Location>();
-	buildLocations(config.getLocations());
+	buildLocations(config.getLocations(), config);
 }
 
 Server::Server(const Server &other)
@@ -59,11 +59,11 @@ Server::~Server()
 {
 }
 
-void	Server::buildLocations(std::vector<LocationConfig> &location_configs)
+void	Server::buildLocations(std::vector<LocationConfig> location_configs, ServerConfig server_config)
 {
 	for (size_t i = 0; i < location_configs.size(); i++)
 	{
-		Location location = Location(location_configs[i]);
+		Location location = Location(location_configs[i], server_config);
 		this->addLocation(location);
 	}
 }

@@ -52,13 +52,13 @@ class Server
 		int							_server_socket; // 0 - 65535
 		struct sockaddr_in			_address;
 		std::string					_server_name;
-		std::map<int, std::string>	_error_page; // Each must be abspath, after finishing parse, each path will be location interpreted
+		std::map<int, std::string>	_error_page; // Each must be abspath
 		int							_max_body_size;
 		std::vector<Location>		_locations;
 		std::string					_root; // must be abspath
-		std::string					_index; // cannot be a directory, cannot start with /
+		std::string					_index; // cannot contain /
 
-		void						buildLocations(std::vector<LocationConfig > &location_configs)
+		void						buildLocations(std::vector<LocationConfig > location_configs, ServerConfig server_config);
 };
 
 #endif

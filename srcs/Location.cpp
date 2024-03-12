@@ -11,18 +11,28 @@ Location::Location()
 	_redir_code = 0;
 	_redir_url = "";
 	_upload_store = "";
-	_cgi_path = "";
-	_cgi_ext = "";
+	_cgi_path = std::vector<std::string>();
+	_cgi_ext = std::vector<std::string>();
 }
 
-Location::Location(LocationConfig &config)
+Location::Location(LocationConfig &config, ServerConfig &server_config)
 {
 	_path = config.getPath();
-	_root = config.getRoot();
+
+	if (config.getRoot().empty())
+		_root = server_config.getRoot();
+	else
+		_root = config.getRoot();
+
 	_alias = config.getAlias();
 	_methods = config.getMethods();
 	_autoindex = config.getAutoindex();
-	_index = config.getIndex();
+
+	if (config.getIndex().empty())
+		_index = server_config.getIndex();
+	else
+		_index = config.getIndex();
+
 	_redir_code = config.getRedirCode();
 	_redir_url = config.getRedirUrl();
 	_upload_store = config.getUploadStore();
@@ -30,20 +40,6 @@ Location::Location(LocationConfig &config)
 	_cgi_ext = config.getCgiExt();
 }
 
-Location::Location(std::string path, std::string root, std::string alias, std::vector<std::string> methods, bool autoindex, std::string index, int redir_code, std::string redir_url, std::string upload_store, std::string cgi_path, std::string cgi_ext)
-{
-	_path = path;
-	_root = root;
-	_alias = alias;
-	_methods = methods;
-	_autoindex = autoindex;
-	_index = index;
-	_redir_code = redir_code;
-	_redir_url = redir_url;
-	_upload_store = upload_store;
-	_cgi_path = cgi_path;
-	_cgi_ext = cgi_ext;
-}
 
 Location::Location(const Location &other)
 {
@@ -128,12 +124,12 @@ std::string	Location::getUploadStore()
 	return _upload_store;
 }
 
-std::string	Location::getCgiPath()
+std::vector<std::string >	Location::getCgiPath()
 {
 	return _cgi_path;
 }
 
-std::string	Location::getCgiExt()
+std::vector<std::string >	Location::getCgiExt()
 {
 	return _cgi_ext;
 }
@@ -188,12 +184,12 @@ void	Location::setUploadStore(std::string upload_store)
 	_upload_store = upload_store;
 }
 
-void	Location::setCgiPath(std::string cgi_path)
+void	Location::setCgiPath(std::vector<std::string > cgi_path)
 {
 	_cgi_path = cgi_path;
 }
 
-void	Location::setCgiExt(std::string cgi_ext)
+void	Location::setCgiExt(std::vector<std::string > cgi_ext)
 {
 	_cgi_ext = cgi_ext;
 }

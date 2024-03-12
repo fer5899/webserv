@@ -3,6 +3,7 @@
 
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Configuration.hpp"
 
 #define BUFFER_SIZE 4000
 

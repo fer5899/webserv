@@ -323,7 +323,7 @@ void Configuration::printConfig()
 	}
 }
 
-std::vector<ServerConfig > Configuration::getServers() const
+std::vector<ServerConfig > &Configuration::getServers()
 {
 	return _servers;
 }

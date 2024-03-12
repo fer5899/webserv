@@ -85,3 +85,184 @@ void ServerConfig::printServerConfig()
 		it->printLocationConfig();
 	}
 }
+
+int ServerConfig::getPort() const
+{
+	try
+	{
+		// Data at listen has form host:port
+		std::string listen = _config.at("listen");
+		size_t pos = listen.find(":");
+		in_addr_t host = 0;
+		if (pos == std::string::npos
+			&& inet_pton(AF_INET, listen.c_str(), &(host)) > 0)
+			return 80;
+		if (pos == listen.size() - 1)
+		{
+			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			exit(1);
+		}
+		int port_num = 0;
+		if (pos == std::string::npos)
+			port_num = std::stoi(listen);
+		else
+			port_num = std::stoi(listen.substr(pos + 1));
+		if (port_num < 0 || port_num > 65535)
+		{
+			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			exit(1);
+		}
+		return port_num;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << RED "Error: No port specified or wrong value" << RESET << std::endl;
+		exit(1);
+	}
+}
+
+in_addr_t	ServerConfig::getHost() const
+{
+	try
+	{
+		// Data at listen has form host:port
+		std::string listen = _config.at("listen");
+		size_t pos = listen.find(":");
+		if (pos == listen.size() - 1)
+		{
+			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			exit(1);
+		}
+		in_addr_t host = 0;
+		if (pos == std::string::npos)
+		{
+			if (inet_pton(AF_INET, listen.c_str(), &(host)) <= 0)
+			{
+				std::cerr << RED "Error: Invalid host" << RESET << std::endl;
+				exit(1);
+			}
+		}
+		else
+		{
+			if (inet_pton(AF_INET, listen.substr(0, pos).c_str(), &(host)) <= 0)
+			{
+				std::cerr << RED "Error: Invalid host" << RESET << std::endl;
+				exit(1);
+			}
+		}
+		return host;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << RED "Error: No host specified or wrong value" << RESET << std::endl;
+		exit(1);
+	}
+}
+
+std::string ServerConfig::getServerName() const
+{
+	try
+	{
+		return _config.at("server_name");
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << RED "Error: No server_name specified" << RESET << std::endl;
+		exit(1);
+	}
+}
+
+std::string ServerConfig::getRoot() const
+{
+	try
+	{
+		std::string root = _config.at("root");
+		if (!isAbsPath(root))
+		{
+			std::cerr << RED "Error: Invalid root path" << RESET << std::endl;
+			exit(1);
+		}
+		return root;
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << RED "Error: No root specified" << RESET << std::endl;
+		exit(1);
+	}
+}
+
+
+std::string ServerConfig::getIndex() const
+{
+	try
+	{
+		std::string index = _config.at("index");
+		if (index.find("/") != std::string::npos)
+		{
+			std::cerr << RED "Error: Invalid index" << RESET << std::endl;
+			exit(1);
+		}
+		return index;
+	}
+	catch(const std::exception& e)
+	{
+		return "index.html";
+	}
+}
+
+int	ServerConfig::getMaxBodySize() const
+{
+	try
+	{
+		return std::stoi(_config.at("client_max_body_size"));
+	}
+	catch(const std::out_of_range& e)
+	{
+		return 1000000;
+	}
+	catch(const std::invalid_argument& e)
+	{
+		std::cerr << RED "Error: Invalid max body size" << RESET << std::endl;
+		exit(1);
+	}
+}
+
+std::map<int, std::string> ServerConfig::getErrorPage() const
+{
+	std::map<int, std::string> error_page;
+	size_t last_page = 0;
+	for (size_t i = 0; i < _error_page.size(); i++)
+	{
+		// Iterate until an element ending in .html is found
+		if (_error_page[i].find(".html") != std::string::npos)
+		{
+			// Check if its abspath
+			if (!isAbsPath(_error_page[i]))
+			{
+				std::cerr << RED "Error: Invalid error page path" << RESET << std::endl;
+				exit(1);
+			}
+			std::string error_page_path = _error_page[i];
+			// Iterate from last_page to i and add all error codes
+			for (size_t j = last_page; j < i; j++)
+			{
+				int error_code = 0;
+				try
+				{
+					error_code = std::stoi(_error_page[j]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << RED "Error: Invalid error code" << RESET << std::endl;
+					exit(1);
+				}
+				error_page[error_code] = error_page_path;
+			}
+			last_page = i + 1;
+		}
+
+	}
+	return error_page;
+}
+
+

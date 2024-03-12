@@ -2,6 +2,8 @@
 
 #include "common.hpp"
 #include "LocationConfig.hpp"
+#include "utils.hpp"
+#include <arpa/inet.h>
 
 class ServerConfig
 {
@@ -17,13 +19,12 @@ class ServerConfig
 		void printServerConfig();
 
 		int getPort() const;
+		in_addr_t	getHost() const;
 		std::string getServerName() const;
 		std::string getRoot() const;
 		std::string getIndex() const;
 		std::map<int, std::string> getErrorPage() const;
 		int getMaxBodySize() const;
-
-		std::vector<LocationConfig> &getLocations();
 	
 	private:
 		std::map<std::string, std::string> _config;

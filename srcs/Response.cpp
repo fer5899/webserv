@@ -32,150 +32,172 @@ Response::~Response()
 
 bool	Response::isCGI()
 {
-	return !_location->getCgiPath().empty() && !_location->getCgiExt().empty();
+	return _location->getCgiPath().size() > 0 && _location->getCgiExt().size() > 0;
 }
 
-void	Response::setCGIHeaders()
+std::map<std::string, std::string> Response::getCGIEnv()
 {
-	_headers_str.append("Content-Type: text/html\r\n");
-	_headers_str.append("Content-Length: " + numberToString(_body.size()) + "\r\n");
+	std::map<std::string, std::string> env;
+	// Set environment variables
+	env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	env["REDIRECT_STATUS"] = "200";
+	env["REQUEST_METHOD"] = _request->getMethod();
+	env["REQUEST_URI"] = _request->getPath();
+	env["SCRIPT_NAME"] = _location->getCgiPath();
+	env["PATH_INFO"] = _request->getPath();
+	env["PATH_TRANSLATED"] = buildFilesystemPath(_request->getPath());
+	// env["QUERY_STRING"] = _request->getQuery();
+	// env["REMOTE_ADDR"] = _client->getIp();
+	// env["REMOTE_PORT"] = numberToString(_client->getPort());
+	env["SERVER_NAME"] = _client->getServer()->getServerName();
+	env["SERVER_PORT"] = numberToString(_client->getServer()->getPort());
+	env["SERVER_SOFTWARE"] = "Webserv42";
+
+	// Add headers to env
+	std::map<std::string, std::string> headers = _request->getHeaders();
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		std::string key = "HTTP_" + it->first;
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+		env[key] = it->second;
+	}
+	return env;
 }
 
-void	Response::setCGIEnv()
-{
-	// Set the environment variables for the CGI process
-	std::string cgi_path = _location->getCgiPath()[0];
-	std::string cgi_ext = _location->getCgiExt()[0];
-	std::string script_name = _request->getPath();
-	std::string query_string;
-	std::string content_length;
-	std::string content_type;
-	std::string remote_addr;
-	std::string remote_user;
-	std::string request_method = _request->getMethod();
-	std::string request_uri = _request->getPath();
-	std::string script_filename = cgi_path;
-	std::string server_name = _client->getServer()->getServerName();
-	std::string server_port = numberToString(_client->getServer()->getPort());
-	std::string server_protocol = "HTTP/1.1";
-	std::string server_software = "Webserv42";
+// void	Response::handleCGI()
+// {
+// 	std::stringstream cgi_response;
 
-	// Set the QUERY_STRING environment variable
-	try
-	{
-		query_string = _request->getHeaders().at("Query-String");
-	}
-	catch(const std::out_of_range& e)
-	{
-		query_string = "";
-	}
+// 	int pipefd[2];
+// 	if (pipe(pipefd) == -1)
+// 	{
+// 		setErrorResponse(500);
+// 		return;
+// 	}
+// 	pid_t pid = fork();
+// 	if (pid == -1)
+// 	{
+// 		setErrorResponse(500);
+// 		return;
+// 	}
+// 	if (pid == 0)
+// 	{
+// 		if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+// 		{
+// 			perror("dup2");
+//			 exit(EXIT_FAILURE);
+// 		}
+// 		close(pipefd[0]);
+// 		close(pipefd[1]);
+// 		std::string cgiPath = _location->getCgiPath();
+// 		std::string path = buildFilesystemPath(_request->getPath());
+// 		std::string cmd = "-c \"" + cgiPath + " " + path + "\"";
+// 		char *cmd_argv[] = {const_cast<char *>(cmd.c_str()), nullptr};
+// 		std::map<std::string, std::string> env = getCGIEnv();
+// 		char *envp[env.size() + 1];
+// 		int i = 0;
+// 		for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); it++)
+// 		{
+// 			std::string env_var = it->first + "=" + it->second;
+// 			envp[i] = strdup(env_var.c_str());
+// 			i++;
+// 		}
+// 		envp[i] = NULL;
+// 		execve("/bin/sh", cmd_argv, envp);
+// 		perror("execve");
+//		 exit(EXIT_FAILURE);
+// 	}
+// 	else
+// 	{
+// 		if (waitpid(pid, NULL, 0) == -1)
+// 		{
+// 			setErrorResponse(500);
+// 			return;
+// 		}
+// 		close(pipefd[1]);
+// 		char buffer[4096];
+// 		size_t bytes_read;
+// 		while ((bytes_read = read(pipefd[0], buffer, 4096)) > 0)
+// 		{
+// 			cgi_response.write(buffer, bytes_read);
+// 		}
+// 		close(pipefd[0]);
+// 	}
+// 	_http_response = cgi_response.str();
+// 	_status = "HTTP/1.1 200 OK\r\n";
+// 	setContentType(".html");
+// 	_headers_str.append("Content-Length: " + numberToString(_http_response.size()) + "\r\n");
+// 	_http_response = _status + _headers_str + "\r\n" + _http_response + "\r\n";
+// }
 
-	// Set the CONTENT_LENGTH environment variable
-	try
-	{
-		content_length = _request->getHeaders().at("Content-Length");
-	}
-	catch(const std::out_of_range& e)
-	{
-		content_length = "";
-	}
+std::string executeProgram(const std::string &executor, const std::string &programPath, char *const envp[]) {
+	std::stringstream output;
 
-	// Set the CONTENT_TYPE environment variable
-	try
-	{
-		content_type = _request->getHeaders().at("Content-Type");
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+	if (pid == 0) {
+		if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
+			perror("dup2");
+			exit(EXIT_FAILURE);
+		}
+
+		close(pipefd[0]);
+		close(pipefd[1]);
+
+		std::vector<char *> args;
+		args.push_back(const_cast<char *>(executor.c_str()));
+		args.push_back(const_cast<char *>(programPath.c_str()));
+		args.push_back(NULL);
+
+		if (execve(executor.c_str(), &args[0], envp) == -1) {
+			perror("execve");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		if (waitpid(pid, NULL, 0) == -1) {
+			perror("waitpid");
+			exit(EXIT_FAILURE);
+		}
+
+		close(pipefd[1]);
+
+		char buffer[128];
+		ssize_t bytesRead;
+		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+			output.write(buffer, bytesRead);
+		}
+		close(pipefd[0]);
 	}
-	catch(const std::out_of_range& e)
-	{
-		content_type = "";
-	}
-
-	// Set the REMOTE_USER environment variable
-	remote_user = "";
-
-	// Set the environment variables
-	setenv("SCRIPT_NAME", script_name.c_str(), 1);
-	setenv("QUERY_STRING", query_string.c_str(), 1);
-	setenv("CONTENT_LENGTH", content_length.c_str(), 1);
-	setenv("CONTENT_TYPE", content_type.c_str(), 1);
-	setenv("REMOTE_USER", remote_user.c_str(), 1);
-	setenv("REQUEST_METHOD", request_method.c_str(), 1);
-	setenv("REQUEST_URI", request_uri.c_str(), 1);
-	setenv("SCRIPT_FILENAME", script_filename.c_str(), 1);
-	setenv("SERVER_NAME", server_name.c_str(), 1);
-	setenv("SERVER_PORT", server_port.c_str(), 1);
-	setenv("SERVER_PROTOCOL", server_protocol.c_str(), 1);
-	setenv("SERVER_SOFTWARE", server_software.c_str(), 1);
-
+	return output.str();
 }
 
 void	Response::handleCGI()
 {
-	// Create a pipe to communicate with the CGI process
-	int pipe_in[2];
-	int pipe_out[2];
-	if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-		return setErrorResponse(500);
-
-	// Fork a new process
-	pid_t pid = fork();
-	if (pid == -1)
-		return setErrorResponse(500);
-	else if (pid == 0) // Child process
+	std::vector<std::string> envp;
+	std::map<std::string, std::string> env = getCGIEnv();
+	char *envp_c[envp.size() + 1];
+	for (size_t i = 0; i < envp.size(); i++)
 	{
-		// Close the read end of the input pipe and the write end of the output pipe
-		close(pipe_in[1]);
-		close(pipe_out[0]);
-
-		// Redirect the input and output of the CGI process to the pipes
-		dup2(pipe_in[0], 0);
-		dup2(pipe_out[1], 1);
-
-		// Set the environment variables for the CGI process
-		setCGIEnv();
-
-		// Execute the CGI process
-		std::string cgi_path = _location->getCgiPath()[0];
-		std::string cgi_ext = _location->getCgiExt()[0];
-		if (execl(cgi_path.c_str(), cgi_path.c_str(), NULL) == -1)
-			exit(1);
+		envp_c[i] = const_cast<char *>(envp[i].c_str());
 	}
-	else // Parent process
-	{
-		// Close the read end of the input pipe and the write end of the output pipe
-		close(pipe_in[0]);
-		close(pipe_out[1]);
+	envp_c[envp.size()] = NULL;
+	std::cout << "CGI PATH: " << buildFilesystemPath(_request->getPath()) << std::endl;
 
-		// Write the request body to the input pipe
-		write(pipe_in[1], _request->getBody().c_str(), _request->getBody().size());
-		close(pipe_in[1]);
-
-		// Read the output of the CGI process from the output pipe
-		char buffer[4096];
-		std::string cgi_output;
-		int bytes_read;
-		while ((bytes_read = read(pipe_out[0], buffer, 4096)) > 0)
-		{
-			cgi_output.append(buffer, bytes_read);
-		}
-		close(pipe_out[0]);
-
-		// Parse the CGI output
-		size_t header_end = cgi_output.find("\r\n\r\n");
-		if (header_end != std::string::npos)
-		{
-			_headers_str = cgi_output.substr(0, header_end);
-			_body = cgi_output.substr(header_end + 4);
-		}
-		else
-			_body = cgi_output;
-
-		// Build the response
-		_status = "HTTP/1.1 200 OK\r\n";
-		setContentType(_location->getCgiPath()[0]);
-		_headers_str.append("Content-Length: " + numberToString(_body.size()) + "\r\n");
-		_http_response = _status + _headers_str + "\r\n" + _body + "\r\n";
-	}
+	_http_response = executeProgram(_location->getCgiPath(), buildFilesystemPath(_request->getPath()), envp_c);
+	_status = "HTTP/1.1 200 OK\r\n";
+	setContentType(".html");
+	_headers_str.append("Content-Length: " + numberToString(_http_response.size()) + "\r\n");
+	_http_response = _status + _headers_str + "\r\n" + _http_response + "\r\n";
 }
 void	Response::buildHttpResponse()
 {
@@ -203,7 +225,6 @@ void	Response::buildHttpResponse()
 		return handleDeleteFile();
 	else
 		return setErrorResponse(500);
-
 }
 
 std::string Response::generateTimestamp()

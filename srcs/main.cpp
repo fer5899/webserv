@@ -27,10 +27,18 @@ int main()
 	l4.addMethod("POST");
 	l4.addMethod("DELETE");
 
+	Location l5;
+	l5.setPath("/pages/python.py");
+	l5.setCgiPath("/usr/local/bin/python3");
+	l5.setCgiExt(".py");
+	l5.addMethod("GET");
+
+
 	s1.addLocation(l1);
 	s1.addLocation(l2);
 	s1.addLocation(l3);
 	s1.addLocation(l4);
+	s1.addLocation(l5);
 	std::vector<Server> servers;
 	servers.push_back(s1);
 	servers.push_back(s2);

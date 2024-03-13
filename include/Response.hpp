@@ -58,8 +58,7 @@ class Response
 		void		buildHttpResponse();
 		bool		isCGI();
 		void		handleCGI();
-		void		setCGIHeaders();
-		void		setCGIEnv();
+		std::map<std::string, std::string>	getCGIEnv();
 
 	public:
 		Response(Client *client, Request *request);

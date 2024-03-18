@@ -20,7 +20,7 @@ class Request
 		//Self info
 		std::string							_buffer;
 		size_t								_size;
-		double								_bodySize;
+		size_t								_bodySize;
 		int									_state;
 
 		bool 								parseFirstLine(std::string& line);
@@ -30,6 +30,7 @@ class Request
 
 	public:
 		Request();
+		Request(size_t maxBodySize);
 		~Request();
 		Request(const Request& other);
 		Request& operator=(const Request& other);

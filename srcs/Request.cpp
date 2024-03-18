@@ -2,6 +2,8 @@
 
 Request::Request() : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
 {}
+Request::Request(size_t maxBodySize) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(maxBodySize), _state(0)
+{}
 
 Request::~Request()
 {}
@@ -125,7 +127,6 @@ bool Request::parseBodyRequisites()
 	validTypes.push_back("multipart/form-data");
 	validTypes.push_back("text/plain");
 	validTypes.push_back("application/json");
-	//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL (FER)
 	validTypes.push_back("application/xml");
 	validTypes.push_back("application/octet-stream");
 	validTypes.push_back("text/html");
@@ -147,14 +148,14 @@ bool Request::parseBodyRequisites()
 	}
 	if (_headers.find("Content-Length") != _headers.end())
 	{
-		try {
-			_bodySize = std::stod(_headers["Content-Length"]); // PORQUÉ? + 1;
-		}
-		catch (std::exception &e)
-		{
-			_errorCode = 400;
-			return true;
-		}
+	try {
+		size_t bodySize = std::stoul(_headers["Content-Length"]);
+		if (bodySize < _bodySize)
+			_bodySize = bodySize;
+	} catch (std::exception &e) {
+		_errorCode = 400;
+		return true;
+	}
 	}
 	_state = 2;
 	return false;
@@ -163,7 +164,7 @@ bool Request::parseBodyRequisites()
 bool Request::parseBody(std::string& line)
 {
 	_body += line;
-	_bodySize -= line.size(); // PORQUÉ? - countSubstring(line, "\n") - countSubstring(line, "\r");
+	_bodySize -= line.size();
 	if (_bodySize < 0)
 	{
 		_errorCode = 413;

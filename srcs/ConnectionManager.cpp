@@ -70,7 +70,7 @@ void ConnectionManager::runServers()
 		
 				if (client->getRequest() == NULL)
 				{
-					client->setRequest(new Request());
+					client->setRequest(new Request(client->getServer()->getMaxBodySize()));
 				}
 				
 				char buffer[BUFFER_SIZE];

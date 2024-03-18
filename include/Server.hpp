@@ -28,7 +28,7 @@ class Server
 		std::string					getServerName() const;
 		int							getPort() const;
 		std::map<int, std::string>	getDefError() const;
-		int							getMaxBodySize() const;
+		size_t						getMaxBodySize() const;
 		std::vector<Location>		&getLocations();
 		Location					&getLocation(int i);
 		std::string					getRoot() const;
@@ -38,7 +38,7 @@ class Server
 		void						setServerName(std::string server_name);
 		void						setPort(int port);
 		void						setDefError(std::map<int, std::string> error_page);
-		void						setMaxBodySize(int max_body_size);
+		void						setMaxBodySize(size_t max_body_size);
 		void						setLocations(std::vector<Location> &locations);
 		void						setRoot(std::string root);
 		void						setIndex(std::string index);
@@ -51,7 +51,7 @@ class Server
 		struct sockaddr_in			_address;
 		std::string					_server_name;
 		std::map<int, std::string>	_error_page; // Each must be abspath, after finishing parse, each path will be location interpreted
-		int							_max_body_size;
+		size_t						_max_body_size;
 		std::vector<Location>		_locations;
 		std::string					_root; // must be abspath
 		std::string					_index; // cannot be a directory, cannot start with /

@@ -109,7 +109,7 @@ std::map<int, std::string>	Server::getDefError() const
 	return _error_page;
 }
 
-int	Server::getMaxBodySize() const
+size_t	Server::getMaxBodySize() const
 {
 	return _max_body_size;
 }
@@ -151,7 +151,7 @@ void	Server::setDefError(std::map<int, std::string> error_page)
 	_error_page = error_page;
 }
 
-void	Server::setMaxBodySize(int max_body_size)
+void	Server::setMaxBodySize(size_t max_body_size)
 {
 	_max_body_size = max_body_size;
 }
@@ -180,7 +180,6 @@ void	Server::setErrorPage(int error_code, std::string error_page_path)
 {
 	_error_page[error_code] = error_page_path;
 }
-
 
 
 // PARTE DE FERNANDO

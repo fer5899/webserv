@@ -8,6 +8,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <algorithm>
+#include <fstream>
+#include <sstream>
 #include "utils.hpp"
 
 /*----------------------COLORS----------------------*/

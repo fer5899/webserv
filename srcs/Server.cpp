@@ -23,6 +23,19 @@ Server::Server(int port) : _port(port)
 	_index = "";
 }
 
+Server::Server(ServerConfig &config)
+{
+	_server_name = config.getServerName();
+	_port = config.getPort();
+	_error_page = config.getErrorPage();
+	_max_body_size = config.getMaxBodySize();
+	_server_socket = 0;
+	_root = config.getRoot();
+	_index = config.getIndex();
+	_locations = std::vector<Location>();
+	buildLocations(config.getLocations(), config);
+}
+
 Server::Server(const Server &other)
 {
 	*this = other;
@@ -44,6 +57,15 @@ Server &Server::operator=(const Server &other)
 
 Server::~Server()
 {
+}
+
+void	Server::buildLocations(std::vector<LocationConfig> location_configs, ServerConfig server_config)
+{
+	for (size_t i = 0; i < location_configs.size(); i++)
+	{
+		Location location = Location(location_configs[i], server_config);
+		this->addLocation(location);
+	}
 }
 
 void Server::setUpServer()
@@ -179,6 +201,33 @@ void	Server::addLocation(Location &location)
 void	Server::setErrorPage(int error_code, std::string error_page_path)
 {
 	_error_page[error_code] = error_page_path;
+}
+
+void	Server::printServer()
+{
+	std::cout << "--------------------------------" << std::endl;
+	std::cout << "Server name: " << _server_name << std::endl;
+	std::cout << "Port: " << _port << std::endl;
+	std::cout << "Host: " << inet_ntoa(_address.sin_addr) << std::endl;
+	std::cout << "Error pages: " << std::endl;
+	for (std::map<int, std::string>::const_iterator it = _error_page.begin(); it != _error_page.end(); it++)
+	{
+		std::cout << "Error code: " << it->first << ", Error page: " << it->second << std::endl;
+	}
+	std::cout << "Max body size: " << _max_body_size << std::endl;
+	std::cout << "Root: " << _root << std::endl;
+	std::cout << "Index: " << _index << std::endl;
+	std::cout << "Locations: " << std::endl;
+	printLocations();
+	std::cout << "--------------------------------" << std::endl;
+}
+
+void	Server::printLocations()
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		_locations[i].printLocation();
+	}
 }
 
 

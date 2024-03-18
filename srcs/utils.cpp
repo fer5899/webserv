@@ -23,3 +23,12 @@ int countSubstring(const std::string& str, const std::string& sub)
     }
     return count;
 }
+
+bool	isAbsPath(std::string str)
+{
+	// Check if the string starts with a '/' and does not contain two consecutive '/'
+	if (str[0] == '/' && countSubstring(str, "//") == 0)
+		return true;
+	return false;
+}
+

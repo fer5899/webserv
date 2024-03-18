@@ -11,24 +11,33 @@ Location::Location()
 	_redir_code = 0;
 	_redir_url = "";
 	_upload_store = "";
-	_cgi_path = "";
-	_cgi_ext = "";
+	_cgi = std::map<std::string, std::string>();
 }
 
-Location::Location(std::string path, std::string root, std::string alias, std::vector<std::string> methods, bool autoindex, std::string index, int redir_code, std::string redir_url, std::string upload_store, std::string cgi_path, std::string cgi_ext)
+Location::Location(LocationConfig &config, ServerConfig &server_config)
 {
-	_path = path;
-	_root = root;
-	_alias = alias;
-	_methods = methods;
-	_autoindex = autoindex;
-	_index = index;
-	_redir_code = redir_code;
-	_redir_url = redir_url;
-	_upload_store = upload_store;
-	_cgi_path = cgi_path;
-	_cgi_ext = cgi_ext;
+	_path = config.getPath();
+
+	if (config.getRoot().empty())
+		_root = server_config.getRoot();
+	else
+		_root = config.getRoot();
+
+	_alias = config.getAlias();
+	_methods = config.getMethods();
+	_autoindex = config.getAutoindex();
+
+	if (config.getIndex().empty())
+		_index = server_config.getIndex();
+	else
+		_index = config.getIndex();
+
+	_redir_code = config.getRedirCode();
+	_redir_url = config.getRedirUrl();
+	_upload_store = config.getUploadStore();
+	_cgi = config.getCgi();
 }
+
 
 Location::Location(const Location &other)
 {
@@ -41,8 +50,7 @@ Location::Location(const Location &other)
 	_redir_code = other._redir_code;
 	_redir_url = other._redir_url;
 	_upload_store = other._upload_store;
-	_cgi_path = other._cgi_path;
-	_cgi_ext = other._cgi_ext;
+	_cgi = other._cgi;
 }
 
 Location	&Location::operator=(const Location &other)
@@ -58,8 +66,7 @@ Location	&Location::operator=(const Location &other)
 		_redir_code = other._redir_code;
 		_redir_url = other._redir_url;
 		_upload_store = other._upload_store;
-		_cgi_path = other._cgi_path;
-		_cgi_ext = other._cgi_ext;
+		_cgi = other._cgi;
 	}
 	return *this;
 }
@@ -113,14 +120,9 @@ std::string	Location::getUploadStore()
 	return _upload_store;
 }
 
-std::string	Location::getCgiPath()
+std::map<std::string, std::string>	Location::getCgi()
 {
-	return _cgi_path;
-}
-
-std::string	Location::getCgiExt()
-{
-	return _cgi_ext;
+	return _cgi;
 }
 
 void	Location::setPath(std::string path)
@@ -173,13 +175,30 @@ void	Location::setUploadStore(std::string upload_store)
 	_upload_store = upload_store;
 }
 
-void	Location::setCgiPath(std::string cgi_path)
+void	Location::setCgi(std::map<std::string, std::string> cgi)
 {
-	_cgi_path = cgi_path;
+	_cgi = cgi;
 }
 
-void	Location::setCgiExt(std::string cgi_ext)
+void	Location::printLocation()
 {
-	_cgi_ext = cgi_ext;
+	std::cout << "----------------" << std::endl;
+	std::cout << "Location path: " << _path << std::endl;
+	std::cout << "Location root: " << _root << std::endl;
+	std::cout << "Location alias: " << _alias << std::endl;
+	std::cout << "Location methods: ";
+	for (size_t i = 0; i < _methods.size(); i++)
+		std::cout << _methods[i] << " ";
+	std::cout << std::endl;
+	std::cout << "Location autoindex: " << _autoindex << std::endl;
+	std::cout << "Location index: " << _index << std::endl;
+	std::cout << "Location redir_code: " << _redir_code << std::endl;
+	std::cout << "Location redir_url: " << _redir_url << std::endl;
+	std::cout << "Location upload_store: " << _upload_store << std::endl;
+	std::cout << "Location cgi: ";
+	for (std::map<std::string, std::string>::iterator it = _cgi.begin(); it != _cgi.end(); it++)
+		std::cout << it->first << " " << it->second << " ";
+	std::cout << std::endl;
+	std::cout << "----------------" << std::endl;
 }
 

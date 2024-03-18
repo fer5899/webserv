@@ -1,51 +1,41 @@
 #include "../include/Server.hpp"
 #include "../include/ConnectionManager.hpp"
+#include "../include/Configuration.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-	Server s1(4242);
-	Server s2(4243);
-	Location l1;
-	l1.setPath("/testing");
-	l1.setIndex("index.html");
-	l1.setAutoindex(true);
-	l1.addMethod("GET");
-
-	Location l2;
-	l2.setPath("/pages");
-	l2.setAutoindex(true);
-	l2.addMethod("GET");
-
-	Location l3;
-	l3.setPath("/");
-	l3.setAutoindex(true);
-	l3.addMethod("GET");
-
-	Location l4;
-	l4.setPath("/testing/upload_store");
-	l4.setUploadStore("/testing/upload_store");
-	l4.addMethod("POST");
-	l4.addMethod("DELETE");
-
-	s1.addLocation(l1);
-	s1.addLocation(l2);
-	s1.addLocation(l3);
-	s1.addLocation(l4);
-	std::vector<Server> servers;
-	servers.push_back(s1);
-	servers.push_back(s2);
-	ConnectionManager cm(servers);
-
-	try
+	if (argc != 2)
 	{
-		cm.setUpServers();
-		cm.runServers();
-	}
-	catch (std::exception &e)
-	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << RED "Usage: ./webserv [config_file]" RESET << std::endl;
 		return 1;
 	}
+	std::string filename(argv[1]);
+	Configuration config(filename);
+	config.parseConfigFile(filename);
+
+	config.printConfig();
+
+	ConnectionManager cm(config);
+
+	cm.printServers();
+
+	// Server s1(4242);
+	// Server s2(4243);
+	// std::vector<Server> servers;
+	// servers.push_back(s1);
+	// servers.push_back(s2);
+	// ConnectionManager cm(servers);
+
+	// try
+	// {
+	// 	cm.setUpServers();
+	// 	cm.runServers();
+	// }
+	// catch (std::exception &e)
+	// {
+	// 	std::cerr << e.what() << std::endl;
+	// 	return 1;
+	// }
 }
 
 

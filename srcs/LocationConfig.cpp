@@ -292,8 +292,16 @@ std::string LocationConfig::getUploadStore() const
 	}
 }
 
-std::vector<std::string> LocationConfig::getCgiPath() const
+std::map<std::string, std::string> LocationConfig::getCgi() const
 {
+	std::map<std::string, std::string> cgi;
+	if (_cgiPath.empty() || _cgiExt.empty())
+		return cgi;
+	if (_cgiPath.size() != _cgiExt.size())
+	{
+		std::cerr << RED "Error: Invalid cgi_path and cgi_ext" << RESET << std::endl;
+		exit(1);
+	}
 	// Check if the cgi_path is valid
 	for (std::vector<std::string>::const_iterator it = _cgiPath.begin(); it != _cgiPath.end(); it++)
 	{
@@ -303,11 +311,6 @@ std::vector<std::string> LocationConfig::getCgiPath() const
 			exit(1);
 		}
 	}
-	return _cgiPath;
-}
-
-std::vector<std::string> LocationConfig::getCgiExt() const
-{
 	// Check if the cgi_ext is valid
 	for (std::vector<std::string>::const_iterator it = _cgiExt.begin(); it != _cgiExt.end(); it++)
 	{
@@ -317,6 +320,10 @@ std::vector<std::string> LocationConfig::getCgiExt() const
 			exit(1);
 		}
 	}
-	return _cgiExt;
+	for (size_t i = 0; i < _cgiPath.size(); i++)
+	{
+		cgi[_cgiExt[i]] = _cgiPath[i];
+	}
+	return cgi;
 }
 

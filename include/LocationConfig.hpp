@@ -25,8 +25,7 @@ class LocationConfig
 		int getRedirCode() const;
 		std::string getRedirUrl() const;
 		std::string getUploadStore() const;
-		std::vector<std::string> getCgiPath() const;
-		std::vector<std::string> getCgiExt() const;
+		std::map<std::string, std::string> getCgi() const;
 
 	
 	private:

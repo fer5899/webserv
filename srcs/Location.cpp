@@ -11,8 +11,7 @@ Location::Location()
 	_redir_code = 0;
 	_redir_url = "";
 	_upload_store = "";
-	_cgi_path = std::vector<std::string>();
-	_cgi_ext = std::vector<std::string>();
+	_cgi = std::map<std::string, std::string>();
 }
 
 Location::Location(LocationConfig &config, ServerConfig &server_config)
@@ -36,8 +35,7 @@ Location::Location(LocationConfig &config, ServerConfig &server_config)
 	_redir_code = config.getRedirCode();
 	_redir_url = config.getRedirUrl();
 	_upload_store = config.getUploadStore();
-	_cgi_path = config.getCgiPath();
-	_cgi_ext = config.getCgiExt();
+	_cgi = config.getCgi();
 }
 
 
@@ -52,8 +50,7 @@ Location::Location(const Location &other)
 	_redir_code = other._redir_code;
 	_redir_url = other._redir_url;
 	_upload_store = other._upload_store;
-	_cgi_path = other._cgi_path;
-	_cgi_ext = other._cgi_ext;
+	_cgi = other._cgi;
 }
 
 Location	&Location::operator=(const Location &other)
@@ -69,8 +66,7 @@ Location	&Location::operator=(const Location &other)
 		_redir_code = other._redir_code;
 		_redir_url = other._redir_url;
 		_upload_store = other._upload_store;
-		_cgi_path = other._cgi_path;
-		_cgi_ext = other._cgi_ext;
+		_cgi = other._cgi;
 	}
 	return *this;
 }
@@ -124,14 +120,9 @@ std::string	Location::getUploadStore()
 	return _upload_store;
 }
 
-std::vector<std::string >	Location::getCgiPath()
+std::map<std::string, std::string>	Location::getCgi()
 {
-	return _cgi_path;
-}
-
-std::vector<std::string >	Location::getCgiExt()
-{
-	return _cgi_ext;
+	return _cgi;
 }
 
 void	Location::setPath(std::string path)
@@ -184,13 +175,8 @@ void	Location::setUploadStore(std::string upload_store)
 	_upload_store = upload_store;
 }
 
-void	Location::setCgiPath(std::vector<std::string > cgi_path)
+void	Location::setCgi(std::map<std::string, std::string> cgi)
 {
-	_cgi_path = cgi_path;
-}
-
-void	Location::setCgiExt(std::vector<std::string > cgi_ext)
-{
-	_cgi_ext = cgi_ext;
+	_cgi = cgi;
 }
 

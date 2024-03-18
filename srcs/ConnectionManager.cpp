@@ -242,3 +242,13 @@ Client *ConnectionManager::getClientBySocket(int socket)
 	}
 	return NULL;
 }
+
+void ConnectionManager::printServers()
+{
+	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	{
+		it->printServer();
+	}
+}
+
+

@@ -17,6 +17,8 @@ int main(int argc, char** argv)
 
 	ConnectionManager cm(config);
 
+	cm.printServers();
+
 	// Server s1(4242);
 	// Server s2(4243);
 	// std::vector<Server> servers;

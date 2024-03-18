@@ -53,6 +53,8 @@ class Location
 		void						setUploadStore(std::string upload_store);
 		void						setCgi(std::map<std::string, std::string> cgi);
 
+		void						printLocation();
+
 };
 
 #endif

@@ -47,6 +47,9 @@ class Server
 
 		void						addLocation(Location &location);
 
+		void						printServer();
+		void						printLocations();
+
 	private:
 		int							_port;
 		int							_server_socket; // 0 - 65535

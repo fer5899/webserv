@@ -203,6 +203,33 @@ void	Server::setErrorPage(int error_code, std::string error_page_path)
 	_error_page[error_code] = error_page_path;
 }
 
+void	Server::printServer()
+{
+	std::cout << "--------------------------------" << std::endl;
+	std::cout << "Server name: " << _server_name << std::endl;
+	std::cout << "Port: " << _port << std::endl;
+	std::cout << "Host: " << inet_ntoa(_address.sin_addr) << std::endl;
+	std::cout << "Error pages: " << std::endl;
+	for (std::map<int, std::string>::const_iterator it = _error_page.begin(); it != _error_page.end(); it++)
+	{
+		std::cout << "Error code: " << it->first << ", Error page: " << it->second << std::endl;
+	}
+	std::cout << "Max body size: " << _max_body_size << std::endl;
+	std::cout << "Root: " << _root << std::endl;
+	std::cout << "Index: " << _index << std::endl;
+	std::cout << "Locations: " << std::endl;
+	printLocations();
+	std::cout << "--------------------------------" << std::endl;
+}
+
+void	Server::printLocations()
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		_locations[i].printLocation();
+	}
+}
+
 
 
 // PARTE DE FERNANDO

@@ -180,3 +180,25 @@ void	Location::setCgi(std::map<std::string, std::string> cgi)
 	_cgi = cgi;
 }
 
+void	Location::printLocation()
+{
+	std::cout << "----------------" << std::endl;
+	std::cout << "Location path: " << _path << std::endl;
+	std::cout << "Location root: " << _root << std::endl;
+	std::cout << "Location alias: " << _alias << std::endl;
+	std::cout << "Location methods: ";
+	for (size_t i = 0; i < _methods.size(); i++)
+		std::cout << _methods[i] << " ";
+	std::cout << std::endl;
+	std::cout << "Location autoindex: " << _autoindex << std::endl;
+	std::cout << "Location index: " << _index << std::endl;
+	std::cout << "Location redir_code: " << _redir_code << std::endl;
+	std::cout << "Location redir_url: " << _redir_url << std::endl;
+	std::cout << "Location upload_store: " << _upload_store << std::endl;
+	std::cout << "Location cgi: ";
+	for (std::map<std::string, std::string>::iterator it = _cgi.begin(); it != _cgi.end(); it++)
+		std::cout << it->first << " " << it->second << " ";
+	std::cout << std::endl;
+	std::cout << "----------------" << std::endl;
+}
+

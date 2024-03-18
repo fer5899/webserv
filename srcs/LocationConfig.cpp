@@ -133,7 +133,7 @@ std::string LocationConfig::getRoot() const
 		std::string root = _locConfig.at("root");
 		if (!isAbsPath(root))
 		{
-			std::cerr << RED "Error: Invalid root path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid root path - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return root;
@@ -151,7 +151,7 @@ std::string LocationConfig::getIndex() const
 		std::string index = _locConfig.at("index");
 		if (index.find("/") != std::string::npos)
 		{
-			std::cerr << RED "Error: Invalid index path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid index path - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return index;
@@ -169,7 +169,7 @@ std::string LocationConfig::getAlias() const
 		std::string alias = _locConfig.at("alias");
 		if (!isAbsPath(alias))
 		{
-			std::cerr << RED "Error: Invalid alias path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid alias path - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return alias;
@@ -187,7 +187,7 @@ std::vector<std::string> LocationConfig::getMethods() const
 	{
 		if (*it != "GET" && *it != "POST" && *it != "DELETE")
 		{
-			std::cerr << RED "Error: Invalid method: " << *it << RESET << std::endl;
+			std::cerr << RED "Error: Invalid method: " << *it << " - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 	}
@@ -205,7 +205,7 @@ bool LocationConfig::getAutoindex() const
 			return false;
 		else
 		{
-			std::cerr << RED "Error: Invalid autoindex value" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid autoindex value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 	}
@@ -224,7 +224,7 @@ int LocationConfig::getRedirCode() const
 		std::vector<std::string> tokens = split(return_str, ' ');
 		if (tokens.size() != 2)
 		{
-			std::cerr << RED "Error: Invalid return value" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid return value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		std::string redir_code = tokens[0];
@@ -236,7 +236,7 @@ int LocationConfig::getRedirCode() const
 			&& redir_code != "307" 
 			&& redir_code != "308")
 		{
-			std::cerr << RED "Error: Invalid redir_code value" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid redir_code value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return std::stoi(redir_code);
@@ -256,14 +256,14 @@ std::string LocationConfig::getRedirUrl() const
 		std::vector<std::string> tokens = split(return_str, ' ');
 		if (tokens.size() != 2)
 		{
-			std::cerr << RED "Error: Invalid return value" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid return value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		std::string redir_url = tokens[1];
 		// Check that the redir_url is a url
 		if (redir_url.find("http://") == std::string::npos && redir_url.find("https://") == std::string::npos)
 		{
-			std::cerr << RED "Error: Invalid redir_url path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid redir_url path - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return redir_url;
@@ -281,7 +281,7 @@ std::string LocationConfig::getUploadStore() const
 		std::string upload_store = _locConfig.at("upload_store");
 		if (!isAbsPath(upload_store))
 		{
-			std::cerr << RED "Error: Invalid upload_store path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid upload_store path - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 		return upload_store;
@@ -299,7 +299,7 @@ std::map<std::string, std::string> LocationConfig::getCgi() const
 		return cgi;
 	if (_cgiPath.size() != _cgiExt.size())
 	{
-		std::cerr << RED "Error: Invalid cgi_path and cgi_ext" << RESET << std::endl;
+		std::cerr << RED "Error: Invalid cgi_path and cgi_ext - Location: " << getPath() << RESET << std::endl;
 		exit(1);
 	}
 	// Check if the cgi_path is valid
@@ -307,7 +307,7 @@ std::map<std::string, std::string> LocationConfig::getCgi() const
 	{
 		if (access(it->c_str(), X_OK) == -1)
 		{
-			std::cerr << RED "Error: Invalid cgi_path: " << *it << RESET << std::endl;
+			std::cerr << RED "Error: Invalid cgi_path: " << *it << " - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 	}
@@ -316,7 +316,7 @@ std::map<std::string, std::string> LocationConfig::getCgi() const
 	{
 		if ((*it)[0] != '.' || (*it).substr(1).find_first_not_of("abcdefghijklmnopqrstuvwxyz") != std::string::npos)
 		{
-			std::cerr << RED "Error: Invalid cgi_ext: " << *it << RESET << std::endl;
+			std::cerr << RED "Error: Invalid cgi_ext: " << *it << " - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
 	}

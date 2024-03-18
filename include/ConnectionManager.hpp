@@ -17,6 +17,7 @@ class ConnectionManager
 	
 		void setUpServers();
 		void runServers();
+		void printServers();
 	
 	private:
 		std::vector<Client> _clients;

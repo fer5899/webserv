@@ -99,7 +99,7 @@ int ServerConfig::getPort() const
 			return 80;
 		if (pos == listen.size() - 1)
 		{
-			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
 		int port_num = 0;
@@ -109,14 +109,14 @@ int ServerConfig::getPort() const
 			port_num = std::stoi(listen.substr(pos + 1));
 		if (port_num < 0 || port_num > 65535)
 		{
-			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
 		return port_num;
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << RED "Error: No port specified or wrong value" << RESET << std::endl;
+		std::cerr << RED "Error: No port specified or wrong value - Server: " << getServerName() << RESET << std::endl;
 		exit(1);
 	}
 }
@@ -130,7 +130,7 @@ in_addr_t	ServerConfig::getHost() const
 		size_t pos = listen.find(":");
 		if (pos == listen.size() - 1)
 		{
-			std::cerr << RED "Error: Invalid port number" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
 		in_addr_t host = 0;
@@ -138,7 +138,7 @@ in_addr_t	ServerConfig::getHost() const
 		{
 			if (inet_pton(AF_INET, listen.c_str(), &(host)) <= 0)
 			{
-				std::cerr << RED "Error: Invalid host" << RESET << std::endl;
+				std::cerr << RED "Error: Invalid host - Server: " << getServerName() << RESET << std::endl;
 				exit(1);
 			}
 		}
@@ -146,7 +146,7 @@ in_addr_t	ServerConfig::getHost() const
 		{
 			if (inet_pton(AF_INET, listen.substr(0, pos).c_str(), &(host)) <= 0)
 			{
-				std::cerr << RED "Error: Invalid host" << RESET << std::endl;
+				std::cerr << RED "Error: Invalid host - Server: " << getServerName() << RESET << std::endl;
 				exit(1);
 			}
 		}
@@ -154,7 +154,7 @@ in_addr_t	ServerConfig::getHost() const
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << RED "Error: No host specified or wrong value" << RESET << std::endl;
+		std::cerr << RED "Error: No host specified or wrong value - Server: " << getServerName() << RESET << std::endl;
 		exit(1);
 	}
 }
@@ -179,14 +179,14 @@ std::string ServerConfig::getRoot() const
 		std::string root = _config.at("root");
 		if (!isAbsPath(root))
 		{
-			std::cerr << RED "Error: Invalid root path" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid root path - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
 		return root;
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << RED "Error: No root specified" << RESET << std::endl;
+		std::cerr << RED "Error: No root specified - Server: " << getServerName() << RESET << std::endl;
 		exit(1);
 	}
 }
@@ -199,7 +199,7 @@ std::string ServerConfig::getIndex() const
 		std::string index = _config.at("index");
 		if (index.find("/") != std::string::npos)
 		{
-			std::cerr << RED "Error: Invalid index" << RESET << std::endl;
+			std::cerr << RED "Error: Invalid index - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
 		return index;
@@ -222,7 +222,7 @@ int	ServerConfig::getMaxBodySize() const
 	}
 	catch(const std::invalid_argument& e)
 	{
-		std::cerr << RED "Error: Invalid max body size" << RESET << std::endl;
+		std::cerr << RED "Error: Invalid max body size - Server: " << getServerName() << RESET << std::endl;
 		exit(1);
 	}
 }
@@ -239,7 +239,7 @@ std::map<int, std::string> ServerConfig::getErrorPage() const
 			// Check if its abspath
 			if (!isAbsPath(_error_page[i]))
 			{
-				std::cerr << RED "Error: Invalid error page path" << RESET << std::endl;
+				std::cerr << RED "Error: Invalid error page path - Server: " << getServerName() << RESET << std::endl;
 				exit(1);
 			}
 			std::string error_page_path = _error_page[i];
@@ -253,7 +253,7 @@ std::map<int, std::string> ServerConfig::getErrorPage() const
 				}
 				catch(const std::exception& e)
 				{
-					std::cerr << RED "Error: Invalid error code" << RESET << std::endl;
+					std::cerr << RED "Error: Invalid error code - Server: " << getServerName() << RESET << std::endl;
 					exit(1);
 				}
 				error_page[error_code] = error_page_path;

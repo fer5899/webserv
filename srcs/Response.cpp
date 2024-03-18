@@ -327,10 +327,9 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 		filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
 		filesystem_path = alias + filesystem_path;
 	}
-	else
-		filesystem_path = root + request_path;
+	filesystem_path = root + filesystem_path;
 
-	return ("." + filesystem_path);
+	return (filesystem_path);
 }
 
 void	Response::handleGetDirectory(std::string filesys_dir_path)

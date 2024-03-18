@@ -35,115 +35,57 @@ bool	Response::isCGI()
 	return _location->getCgiPath().size() > 0 && _location->getCgiExt().size() > 0;
 }
 
-std::map<std::string, std::string> Response::getCGIEnv()
-{
-	std::map<std::string, std::string> env;
-	// Set environment variables
-	env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	env["REDIRECT_STATUS"] = "200";
-	env["REQUEST_METHOD"] = _request->getMethod();
-	env["REQUEST_URI"] = _request->getPath();
-	env["SCRIPT_NAME"] = _location->getCgiPath();
-	env["PATH_INFO"] = _request->getPath();
-	env["PATH_TRANSLATED"] = buildFilesystemPath(_request->getPath());
-	// env["QUERY_STRING"] = _request->getQuery();
-	// env["REMOTE_ADDR"] = _client->getIp();
-	// env["REMOTE_PORT"] = numberToString(_client->getPort());
-	env["SERVER_NAME"] = _client->getServer()->getServerName();
-	env["SERVER_PORT"] = numberToString(_client->getServer()->getPort());
-	env["SERVER_SOFTWARE"] = "Webserv42";
+char** Response::getCGIEnv() {
+    std::vector<std::string> envStrings;
 
-	// Add headers to env
-	std::map<std::string, std::string> headers = _request->getHeaders();
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++)
-	{
-		std::string key = "HTTP_" + it->first;
-		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
-		env[key] = it->second;
-	}
-	return env;
+    // Set environment variables
+    envStrings.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    envStrings.push_back("REDIRECT_STATUS=200");
+    envStrings.push_back("REQUEST_METHOD=" + _request->getMethod());
+    envStrings.push_back("REQUEST_URI=" + _request->getPath());
+    envStrings.push_back("SCRIPT_NAME=" + _location->getCgiPath());
+    envStrings.push_back("PATH_INFO=" + _request->getPath());
+    envStrings.push_back("PATH_TRANSLATED=" + buildFilesystemPath(_request->getPath()));
+    // envStrings.push_back("QUERY_STRING=" + _request->getQuery());
+    // envStrings.push_back("REMOTE_ADDR=" + _client->getIp());
+    // envStrings.push_back("REMOTE_PORT=" + numberToString(_client->getPort()));
+    envStrings.push_back("SERVER_NAME=" + _client->getServer()->getServerName());
+    envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer()->getPort()));
+    envStrings.push_back("SERVER_SOFTWARE=Webserv42");
+    envStrings.push_back("BODY=" + _request->getBody());
+
+    // Add headers to env
+    std::map<std::string, std::string> headers = _request->getHeaders();
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+        std::string key = "HTTP_" + it->first;
+        std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+        envStrings.push_back(key + "=" + it->second);
+    }
+
+    // Convertir el vector de strings en un array de punteros a char
+    char** envp_c = new char*[envStrings.size() + 1];
+    for (size_t i = 0; i < envStrings.size(); ++i) {
+        envp_c[i] = new char[envStrings[i].size() + 1];
+        std::strcpy(envp_c[i], envStrings[i].c_str());
+    }
+    envp_c[envStrings.size()] = NULL;
+
+    return envp_c;
 }
 
-// void	Response::handleCGI()
-// {
-// 	std::stringstream cgi_response;
-
-// 	int pipefd[2];
-// 	if (pipe(pipefd) == -1)
-// 	{
-// 		setErrorResponse(500);
-// 		return;
-// 	}
-// 	pid_t pid = fork();
-// 	if (pid == -1)
-// 	{
-// 		setErrorResponse(500);
-// 		return;
-// 	}
-// 	if (pid == 0)
-// 	{
-// 		if (dup2(pipefd[1], STDOUT_FILENO) == -1)
-// 		{
-// 			perror("dup2");
-//			 exit(EXIT_FAILURE);
-// 		}
-// 		close(pipefd[0]);
-// 		close(pipefd[1]);
-// 		std::string cgiPath = _location->getCgiPath();
-// 		std::string path = buildFilesystemPath(_request->getPath());
-// 		std::string cmd = "-c \"" + cgiPath + " " + path + "\"";
-// 		char *cmd_argv[] = {const_cast<char *>(cmd.c_str()), nullptr};
-// 		std::map<std::string, std::string> env = getCGIEnv();
-// 		char *envp[env.size() + 1];
-// 		int i = 0;
-// 		for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); it++)
-// 		{
-// 			std::string env_var = it->first + "=" + it->second;
-// 			envp[i] = strdup(env_var.c_str());
-// 			i++;
-// 		}
-// 		envp[i] = NULL;
-// 		execve("/bin/sh", cmd_argv, envp);
-// 		perror("execve");
-//		 exit(EXIT_FAILURE);
-// 	}
-// 	else
-// 	{
-// 		if (waitpid(pid, NULL, 0) == -1)
-// 		{
-// 			setErrorResponse(500);
-// 			return;
-// 		}
-// 		close(pipefd[1]);
-// 		char buffer[4096];
-// 		size_t bytes_read;
-// 		while ((bytes_read = read(pipefd[0], buffer, 4096)) > 0)
-// 		{
-// 			cgi_response.write(buffer, bytes_read);
-// 		}
-// 		close(pipefd[0]);
-// 	}
-// 	_http_response = cgi_response.str();
-// 	_status = "HTTP/1.1 200 OK\r\n";
-// 	setContentType(".html");
-// 	_headers_str.append("Content-Length: " + numberToString(_http_response.size()) + "\r\n");
-// 	_http_response = _status + _headers_str + "\r\n" + _http_response + "\r\n";
-// }
-
-std::string executeProgram(const std::string &executor, const std::string &programPath, char *const envp[]) {
+void	Response::handleCGI()
+{
+	const std::string &executor = _location->getCgiPath();
+	const std::string &programPath = buildFilesystemPath(_request->getPath());
+	char **const envp = getCGIEnv();
 	std::stringstream output;
 
     int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
-
+    if (pipe(pipefd) == -1)
+		return setErrorResponse(500);
     pid_t pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
+    if (pid == -1)
+		return setErrorResponse(500);
 
 	if (pid == 0) {
 		if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
@@ -164,10 +106,8 @@ std::string executeProgram(const std::string &executor, const std::string &progr
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (waitpid(pid, NULL, 0) == -1) {
-			perror("waitpid");
-			exit(EXIT_FAILURE);
-		}
+		if (waitpid(pid, NULL, 0) == -1)
+			return setErrorResponse(500);
 
 		close(pipefd[1]);
 
@@ -178,26 +118,10 @@ std::string executeProgram(const std::string &executor, const std::string &progr
 		}
 		close(pipefd[0]);
 	}
-	return output.str();
-}
-
-void	Response::handleCGI()
-{
-	std::vector<std::string> envp;
-	std::map<std::string, std::string> env = getCGIEnv();
-	char *envp_c[envp.size() + 1];
-	for (size_t i = 0; i < envp.size(); i++)
-	{
-		envp_c[i] = const_cast<char *>(envp[i].c_str());
-	}
-	envp_c[envp.size()] = NULL;
-	std::cout << "CGI PATH: " << buildFilesystemPath(_request->getPath()) << std::endl;
-
-	_http_response = executeProgram(_location->getCgiPath(), buildFilesystemPath(_request->getPath()), envp_c);
 	_status = "HTTP/1.1 200 OK\r\n";
-	setContentType(".html");
-	_headers_str.append("Content-Length: " + numberToString(_http_response.size()) + "\r\n");
-	_http_response = _status + _headers_str + "\r\n" + _http_response + "\r\n";
+	_headers_str.append("Content-Type: text/html\r\n");
+	_headers_str.append("Content-Length: " + numberToString(output.str().size()) + "\r\n");
+	_http_response = _status + _headers_str + "\r\n" + output.str() + "\r\n";
 }
 void	Response::buildHttpResponse()
 {

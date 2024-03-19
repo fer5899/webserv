@@ -107,7 +107,12 @@ void	Response::handleCGI()
 			perror("dup2");
 			exit(EXIT_FAILURE);
 		}
-
+		
+       int devNull = open("/dev/null", O_WRONLY);
+        if (devNull != -1) {
+            dup2(devNull, STDERR_FILENO);
+            close(devNull);
+        }
 		close(pipefd[0]);
 		close(pipefd[1]);
 
@@ -121,8 +126,12 @@ void	Response::handleCGI()
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (waitpid(pid, NULL, 0) == -1)
-			return setErrorResponse(500);
+        int status;
+        if (waitpid(pid, &status, 0) == -1)
+            return setErrorResponse(500);
+
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+            return setErrorResponse(500);
 
 		close(pipefd[1]);
 

@@ -11,6 +11,7 @@ CFLAGS = -Wall -Werror -Wextra -std=c++98 -fsanitize=address
 OBJ_DIR = objs/
 SRC = $(wildcard srcs/*.cpp)
 OBJS = $(patsubst srcs/%, $(OBJ_DIR)%, $(SRC:.cpp=.o))
+CONFS = configuration_files/goodconf.conf
 
 ##########################################################################################################################
 
@@ -25,13 +26,15 @@ clean:
 fclean: clean
 	@rm -rf $(NAME)
 	@echo "$(RED)Removing:$(DEFAULT) Program $(NAME)."
+	@rm -rf $(CONFS)
+	@echo "$(RED)Removing:$(DEFAULT) $(CONFS)."
 
 re: fclean all
 
 ##########################################################################################################################
 
 # Build rules
-$(NAME): $(OBJ_DIR) $(OBJS)
+$(NAME): $(OBJ_DIR) $(OBJS) $(CONFS)
 	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 	@echo "$(MAGENTA)Program $(NAME) created successfully.$(DEFAULT)"
 
@@ -53,6 +56,10 @@ $(OBJ_DIR):
 $(OBJ_DIR)%.o: srcs/%.cpp | $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "$(GREEN)Compiling:$(DEFAULT) $<"
+
+$(CONFS):
+	@sed "s#\__PWD__#$(shell pwd)#g" configuration_files/template.conf > configuration_files/goodconf.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) Goodconf.conf."
 
 ##########################################################################################################################
 

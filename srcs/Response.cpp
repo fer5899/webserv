@@ -445,7 +445,7 @@ void	Response::handleFileUpload()
 	// Create files with their respective filename and content
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
-		std::string file_path = "." + upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
+		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{

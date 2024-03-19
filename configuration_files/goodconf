@@ -4,7 +4,7 @@ server
 	server_name test1;						# specify server_name
 	error_page 404 /error/404.html;			# default error pages multiple error pages can be specified in different lines
 	client_max_body_size 1024;				# max request body size in bytes, default 1000000
-	root /Users/fgomez-d/repos/webserv;		# root folder of site directory, full path, mandatory parameter
+	root /Users/fgomez-d/repos/webserv;		# root folder of site directory, absolute path, mandatory parameter
 	index index.html;						# default page when requesting a directory, index.html by default
 
 	location /testing
@@ -19,6 +19,13 @@ server
 		alias /pages;					# replaces location part of URI.
 		allow_methods GET;
 		index home.html;
+	}
+	location /upload
+	{
+		alias /testing/upload_store;										# replaces location part of URI.
+		autoindex true;														# turn on/off directory listing
+		allow_methods GET POST;												# allowed methods in location, GET only by default
+		upload_store /Users/fgomez-d/repos/webserv/testing/upload_store;	# absolute path to store uploaded files, mandatory parameter
 	}
 	location /cgi-bin 
 	{

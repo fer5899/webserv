@@ -73,6 +73,10 @@ git: clean $(GITIGNORE)
 	@git push
 	@echo "$(BOLD)$(GREEN)Git:$(WHITE) Pushing all changes.$(DEFAULT)"
 
+test_response: $(OBJS)
+	@$(CC) $(CFLAGS) -c srcs/test_response.cpp -o objs/test_response.o
+	@$(CC) $(CFLAGS) $(OBJS) -o test_response
+
 # Color codes for improved readability
 BOLD    := \033[1m
 BLACK   := \033[30;1m

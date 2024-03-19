@@ -7,3 +7,4 @@
 
 std::vector<std::string>	split(const std::string &s, char delimiter);
 int							countSubstring(const std::string& str, const std::string& sub);
+bool						isAbsPath(std::string str);

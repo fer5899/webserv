@@ -2,6 +2,8 @@
 
 Request::Request() : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
 {}
+Request::Request(size_t maxBodySize) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(maxBodySize), _state(0)
+{}
 
 Request::~Request()
 {}
@@ -20,11 +22,15 @@ Request& Request::operator=(const Request& other)
 		_size = other._size;
 		_bodySize = other._bodySize;
 		_state = other._state;
+		_query_params = other._query_params;
 	}
 	return *this;
 }
 
-Request::Request(const Request& other) : _path(other._path), _method(other._method), _version(other._version), _headers(other._headers), _body(other._body), _errorCode(other._errorCode), _buffer(other._buffer), _size(other._size), _bodySize(other._bodySize) , _state(other._state){}
+Request::Request(const Request& other)
+{
+	*this = other;
+}
 
 std::map<std::string, std::string>	Request::getHeaders() const
 {
@@ -36,7 +42,7 @@ std::string	Request::getMethod() const
 	return _method;
 }
 
-std::string	Request::getURL() const
+std::string	Request::getPath() const
 {
 	return _path;
 }
@@ -49,11 +55,6 @@ std::string	Request::getHTTPVersion() const
 std::string	Request::getBody() const
 {
 	return _body;
-}
-
-void	Request::setErrorCode(int errorCode)
-{
-	_errorCode = errorCode;
 }
 
 int		Request::getErrorCode() const
@@ -126,7 +127,6 @@ bool Request::parseBodyRequisites()
 	validTypes.push_back("multipart/form-data");
 	validTypes.push_back("text/plain");
 	validTypes.push_back("application/json");
-	//IMPORTANTE VER CUANTOS DE ESTOS ACEPTAMOS AL FINAL (FER)
 	validTypes.push_back("application/xml");
 	validTypes.push_back("application/octet-stream");
 	validTypes.push_back("text/html");
@@ -148,14 +148,14 @@ bool Request::parseBodyRequisites()
 	}
 	if (_headers.find("Content-Length") != _headers.end())
 	{
-		try {
-			_bodySize = std::stod(_headers["Content-Length"]) + 1;
-		}
-		catch (std::exception &e)
-		{
-			_errorCode = 400;
-			return true;
-		}
+	try {
+		size_t bodySize = std::stoul(_headers["Content-Length"]);
+		if (bodySize < _bodySize)
+			_bodySize = bodySize;
+	} catch (std::exception &e) {
+		_errorCode = 400;
+		return true;
+	}
 	}
 	_state = 2;
 	return false;
@@ -164,7 +164,7 @@ bool Request::parseBodyRequisites()
 bool Request::parseBody(std::string& line)
 {
 	_body += line;
-	_bodySize -= line.size() - countSubstring(line, "\n") - countSubstring(line, "\r");
+	_bodySize -= line.size();
 	if (_bodySize < 0)
 	{
 		_errorCode = 413;
@@ -177,7 +177,7 @@ bool Request::parseBody(std::string& line)
 	return false;
 }
 
-bool Request::parseRequest(std::string& request)
+bool Request::parseRequest(std::string request)
 {
 	int request_size = request.size();
 	if (request_size  == 0)
@@ -232,7 +232,7 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	}
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;
-	os << BLUE "URL: " RESET << Request.getURL() << std::endl;
+	os << BLUE "URL: " RESET << Request.getPath() << std::endl;
 	os << BLUE "HTTP version: " RESET << Request.getHTTPVersion() << std::endl;
 	os << BLUE "Keep-Alive: " RESET << (Request.keepAlive() ? "true" : "false") << std::endl;
 	os << "--------------------------------" << std::endl;
@@ -250,3 +250,34 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	os << "--------------------------------" << std::endl;
 	return os;
 }
+
+void	Request::setPath(std::string path)
+{
+	_path = path;
+}
+
+void	Request::setHeaders(std::map<std::string, std::string> headers)
+{
+	_headers = headers;
+}
+
+void	Request::setBody(std::string body)
+{
+	_body = body;
+}
+
+void	Request::setMethod(std::string method)
+{
+	_method = method;
+}
+
+void	Request::setErrorCode(int error_code)
+{
+	_errorCode = error_code;
+}
+
+void	Request::setQueryParams(std::map<std::string, std::string> query_params)
+{
+	_query_params = query_params;
+}
+

@@ -3,8 +3,6 @@
 import cgi
 
 def print_html_header():
-    print("Content-Type: text/html;charset=utf-8")
-    print()
     print("<!DOCTYPE html>")
     print("<html>")
     print("<head>")

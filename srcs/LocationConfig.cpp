@@ -235,20 +235,17 @@ int LocationConfig::getRedirCode() const
 {
 	try
 	{
-		std::string return_str = _locConfig.at("return");
-		// Split the string by space
-		std::vector<std::string> tokens = split(return_str, ' ');
-		if (tokens.size() != 2)
+		if (_return.empty())
+			return 0;
+		if (_return.size() != 2)
 		{
 			std::cerr << RED "Error: Invalid return value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
-		std::string redir_code = tokens[0];
-		if (redir_code != "300" 
-			&& redir_code != "301" 
+		std::string redir_code = _return[0];
+		if (redir_code != "301" 
 			&& redir_code != "302" 
 			&& redir_code != "303" 
-			&& redir_code != "304" 
 			&& redir_code != "307" 
 			&& redir_code != "308")
 		{
@@ -267,15 +264,14 @@ std::string LocationConfig::getRedirUrl() const
 {
 	try
 	{
-		std::string return_str = _locConfig.at("return");
-		// Split the string by space
-		std::vector<std::string> tokens = split(return_str, ' ');
-		if (tokens.size() != 2)
+		if (_return.empty())
+			return "";
+		if (_return.size() != 2)
 		{
 			std::cerr << RED "Error: Invalid return value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
-		std::string redir_url = tokens[1];
+		std::string redir_url = _return[1];
 		// Check that the redir_url is a url
 		if (redir_url.find("http://") == std::string::npos && redir_url.find("https://") == std::string::npos)
 		{

@@ -157,12 +157,12 @@ void	Response::buildHttpResponse()
 	_location = matchLocation();
 	if (!_location)
 		return (setErrorResponse(404));
-	// Check if the method of the request is allowed in the location
-	if (!checkValidMethod())
-		return (setErrorResponse(405));
 	// Handle redirects
 	if (_location->getRedirCode() > 0)
 		return (setRedirection());
+	// Check if the method of the request is allowed in the location
+	if (!checkValidMethod())
+		return (setErrorResponse(405));
 	// Select behavior based on method of the request
 	if (isCGI())
 		return handleCGI();

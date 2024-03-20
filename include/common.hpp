@@ -3,6 +3,7 @@
 
 /*----------------------DEFINITIONS & CONVENTIONS----------------------*/
 #define MAX_REQUEST_SIZE 1000000
+#define CONN_TIMEOUT 10
 
 /*----------------------LIBRARIES----------------------*/
 #include <iostream>
@@ -11,6 +12,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <ctime>
 #include "utils.hpp"
 
 /*----------------------COLORS----------------------*/

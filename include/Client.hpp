@@ -4,6 +4,7 @@
 # include "Server.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
+# include "common.hpp"
 
 class Request;
 
@@ -16,6 +17,8 @@ class Client
 		Server		*_server;
 		Request		*_request;
 		Response	*_response;
+		time_t		_last_req_time;
+
 		// int			_req_count;
 
 	public:
@@ -31,6 +34,8 @@ class Client
 
 		void		setRequest(Request *request);
 		void		setResponse(Response *response);
+		void		setLastReqTime();
+		const time_t	&getLastReqTime() const;
 
 };
 

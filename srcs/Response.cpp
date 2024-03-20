@@ -434,9 +434,10 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 	if (!alias.empty())
 	{
 		filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
-		filesystem_path = alias + filesystem_path;
+		filesystem_path = root + alias + filesystem_path;
+		return (filesystem_path);
 	}
-	filesystem_path = root + filesystem_path;
+	filesystem_path = root + request_path;
 
 	return (filesystem_path);
 }

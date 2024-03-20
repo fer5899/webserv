@@ -158,6 +158,8 @@ bool Request::parseBodyRequisites()
 	}
 	}
 	_state = 2;
+	if (_headers.find("Transfer-Encoding") != _headers.end() && _headers["Transfer-Encoding"] == "chunked")
+		_state = 3;
 	return false;
 }
 
@@ -174,6 +176,46 @@ bool Request::parseBody(std::string& line)
 	{
 		return true;
 	}
+	return false;
+}
+
+bool	Request::parseBodyChunked(std::string line)
+{
+	line = _buffer + line;
+	std::string::size_type pos = line.find("\r\n");
+	while (pos != std::string::npos)
+	{
+		_buffer = line;
+		std::string chunk = line.substr(0, pos);
+		line.erase(0, pos + 2);
+		if (chunk.empty())
+			return true;
+		try {
+			size_t chunkSize = std::stoul(chunk, 0, 16);
+			if (chunkSize == 0)
+				return true;
+			if (chunkSize > _bodySize)
+			{
+				_errorCode = 413;
+				return true;
+			}
+			if (line.size() < chunkSize + 2)
+				return false;
+			_body += line.substr(0, chunkSize);
+			line.erase(0, chunkSize + 2);
+			_bodySize -= chunkSize;
+			if (_bodySize < 0)
+			{
+				_errorCode = 413;
+				return true;
+			}
+		} catch (std::exception &e) {
+			_errorCode = 400;
+			return true;
+		}
+		pos = line.find("\r\n");
+	}
+	_buffer = line;
 	return false;
 }
 
@@ -217,6 +259,11 @@ bool Request::parseRequest(std::string request)
 	if (_state == 2)
 	{
 		if (parseBody(request))
+			return true;
+	}
+	else if (_state == 3)
+	{
+		if (parseBodyChunked(request))
 			return true;
 	}
 	_buffer += request;

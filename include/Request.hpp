@@ -27,6 +27,7 @@ class Request
 		bool								parseHeaders(std::string& line);
 		bool								parseBodyRequisites();
 		bool								parseBody(std::string& line);
+		bool								parseBodyChunked(std::string line);
 
 	public:
 		Request();

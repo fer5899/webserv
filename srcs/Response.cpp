@@ -30,6 +30,124 @@ Response::~Response()
 {
 }
 
+std::string Response::getCGICmd()
+{
+	size_t pos = _request->getPath().find_last_of('.');
+	if (pos != std::string::npos)
+	{
+		std::string extension = _request->getPath().substr(pos);
+		try
+		{
+			return _location->getCgi().at(extension);
+		}
+		catch(const std::out_of_range& e)
+		{
+			return "";
+		}
+	}
+	return "";
+}
+
+bool	Response::isCGI()
+{
+	return _location->getCgi().size() > 0 && !getCGICmd().empty();
+}
+
+char** Response::getCGIEnv() {
+    std::vector<std::string> envStrings;
+
+    // Set environment variables
+    envStrings.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    envStrings.push_back("REDIRECT_STATUS=200");
+    envStrings.push_back("REQUEST_METHOD=" + _request->getMethod());
+    envStrings.push_back("REQUEST_URI=" + _request->getPath());
+    envStrings.push_back("SCRIPT_NAME=" + getCGICmd());
+    envStrings.push_back("PATH_INFO=" + _request->getPath());
+    envStrings.push_back("PATH_TRANSLATED=" + buildFilesystemPath(_request->getPath()));
+    envStrings.push_back("SERVER_NAME=" + _client->getServer()->getServerName());
+    envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer()->getPort()));
+    envStrings.push_back("SERVER_SOFTWARE=Webserv42");
+    envStrings.push_back("BODY=" + _request->getBody());
+
+    // Add headers to env
+    std::map<std::string, std::string> headers = _request->getHeaders();
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+        std::string key = "HTTP_" + it->first;
+        std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+        envStrings.push_back(key + "=" + it->second);
+    }
+
+    // Add environment variables from the server
+    char** envp_c = new char*[envStrings.size() + 1];
+    for (size_t i = 0; i < envStrings.size(); ++i) {
+        envp_c[i] = new char[envStrings[i].size() + 1];
+        std::strcpy(envp_c[i], envStrings[i].c_str());
+    }
+    envp_c[envStrings.size()] = NULL;
+
+    return envp_c;
+}
+
+void	Response::handleCGI()
+{
+	const std::string &executor = getCGICmd();
+	const std::string &programPath = buildFilesystemPath(_request->getPath());
+	char **const envp = getCGIEnv();
+	std::stringstream output;
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1)
+		return setErrorResponse(500);
+    pid_t pid = fork();
+    if (pid == -1)
+		return setErrorResponse(500);
+
+	if (pid == 0) {
+		if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
+			perror("dup2");
+			exit(EXIT_FAILURE);
+		}
+		
+       int devNull = open("/dev/null", O_WRONLY);
+        if (devNull != -1) {
+            dup2(devNull, STDERR_FILENO);
+            close(devNull);
+        }
+		close(pipefd[0]);
+		close(pipefd[1]);
+
+		std::vector<char *> args;
+		args.push_back(const_cast<char *>(executor.c_str()));
+		args.push_back(const_cast<char *>(programPath.c_str()));
+		args.push_back(NULL);
+
+		if (execve(executor.c_str(), &args[0], envp) == -1) {
+			perror("execve");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+        int status;
+        if (waitpid(pid, &status, 0) == -1)
+            return setErrorResponse(500);
+
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+            return setErrorResponse(500);
+
+		close(pipefd[1]);
+
+		char buffer[128];
+		ssize_t bytesRead;
+		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+			output.write(buffer, bytesRead);
+		}
+		close(pipefd[0]);
+	}
+	_status = "HTTP/1.1 200 OK\r\n";
+	_headers_str.append("Content-Type: text/html\r\n");
+	_headers_str.append("Content-Length: " + numberToString(output.str().size()) + "\r\n");
+	_http_response = _status + _headers_str + "\r\n" + output.str() + "\r\n";
+}
+
 void	Response::buildHttpResponse()
 {
 	// Check if there was an error in the request parsing
@@ -46,25 +164,16 @@ void	Response::buildHttpResponse()
 	if (_location->getRedirCode() > 0)
 		return (setRedirection());
 	// Select behavior based on method of the request
-	if (_request->getMethod() == "GET")
-	{
-		// if (checkCGI())  Comprobar existencia de 2 values
-		//     return executeCGI(); Meter error si ext no es .cgi
-		// else
+	if (isCGI())
+		return handleCGI();
+	else if (_request->getMethod() == "GET")
 		return handleGetResource(buildFilesystemPath(_request->getPath()));
-	}
 	else if (_request->getMethod() == "POST")
-	{
-		// if (checkCGI())
-		//     return executeCGI();
-		// else
 		return handleFileUpload();
-	}
 	else if (_request->getMethod() == "DELETE")
 		return handleDeleteFile();
 	else
 		return setErrorResponse(500);
-
 }
 
 std::string Response::generateTimestamp()

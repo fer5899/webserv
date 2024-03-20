@@ -56,6 +56,10 @@ class Response
 		void		buildSimpleErrorPage();
 		void		buildStatus(int status);
 		void		buildHttpResponse();
+		bool		isCGI();
+		void		handleCGI();
+		char**		getCGIEnv();
+		std::string	getCGICmd();
 
 	public:
 		Response(Client *client, Request *request);

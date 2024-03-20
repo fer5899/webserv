@@ -34,4 +34,5 @@ class LocationConfig
 		std::vector<std::string> _methods;
 		std::vector<std::string> _cgiPath;
 		std::vector<std::string> _cgiExt;
+		std::vector<std::string> _return;
 };

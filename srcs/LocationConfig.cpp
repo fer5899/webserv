@@ -19,6 +19,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &other)
 		this->_methods = other._methods;
 		this->_cgiPath = other._cgiPath;
 		this->_cgiExt = other._cgiExt;
+		this->_return = other._return;
 	}
 	return *this;
 }
@@ -71,6 +72,16 @@ void LocationConfig::parseLocationConfig(std::string line)
 			_cgiExt.push_back(word);
 		}
 	}
+	else if(line.find("return") != std::string::npos)
+	{
+		std::string word;
+		while(iss >> word)
+		{
+			if (word == "return")
+				continue;
+			_return.push_back(word);
+		}
+	}
 	else if(line.find("}") == std::string::npos && countWords(line) == 2)
 	{
 		std::string key;
@@ -111,6 +122,11 @@ void LocationConfig::printLocationConfig()
 	}
 	std::cout << "  -->CgiExt: " << std::endl;
 	for (std::vector<std::string>::iterator it = _cgiExt.begin(); it != _cgiExt.end(); it++)
+	{
+		std::cout <<"    --" <<  *it << std::endl;
+	}
+	std::cout << "  -->Return: " << std::endl;
+	for (std::vector<std::string>::iterator it = _return.begin(); it != _return.end(); it++)
 	{
 		std::cout <<"    --" <<  *it << std::endl;
 	}

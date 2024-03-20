@@ -5,6 +5,8 @@ Client::Client(Server *server, int socket) : _socket(socket), _server(server)
 {
 	_request = NULL;
 	_response = NULL;
+	_last_req_time = time(NULL);
+	// std::cout << "FIRST Last req time set to: " << _last_req_time << std::endl;
 }
 
 Client::Client(const Client &other)
@@ -18,6 +20,7 @@ Client &Client::operator=(const Client &other)
 	_server = other._server;
 	_request = other._request;
 	_response = other._response;
+	_last_req_time = other._last_req_time;
 	return *this;
 }
 
@@ -57,5 +60,16 @@ void		Client::setRequest(Request *request)
 void		Client::setResponse(Response *response)
 {
 	_response = response;
+}
+
+const time_t	&Client::getLastReqTime() const
+{
+	return _last_req_time;
+}
+
+void		Client::setLastReqTime()
+{
+	_last_req_time = time(NULL);
+	// std::cout << "Last req time set to: " << _last_req_time << std::endl;
 }
 

@@ -34,6 +34,7 @@ class ConnectionManager
 		void removeClient(int socket);
 		Server *getServerBySocket(int socket);
 		Client *getClientBySocket(int socket);
+		void checkTimeouts();
 };
 
 #endif

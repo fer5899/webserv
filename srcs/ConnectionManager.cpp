@@ -115,6 +115,7 @@ void ConnectionManager::runServers()
 				}
 				else
 				{
+					client->setLastReqTime();
 					buffer[bytesRead] = '\0';
 					std::string buffer_str(buffer);
 					
@@ -161,14 +162,17 @@ void ConnectionManager::runServers()
 				else 
 				{
 					std::cout << "Data sent" << std::endl;
-					close(i);
+					client->setLastReqTime();
 					FD_CLR(i, &this->_write_sockets);
-					this->removeClient(i);
-					std::cout << "Connection closed" << std::endl;
-					std::cout << std::endl;
+
+					// close(i);
+					// this->removeClient(i);
+					// std::cout << "Connection closed" << std::endl;
+					// std::cout << std::endl;
 				}
 			}
 		}
+		this->checkTimeouts();
 	}
 }
 
@@ -248,6 +252,23 @@ void ConnectionManager::printServers()
 	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 	{
 		it->printServer();
+	}
+}
+
+void ConnectionManager::checkTimeouts()
+{
+	for(unsigned long i = 0; i < this->_clients.size(); i++)
+	{
+		// std::cout << "Time: " << time(NULL) - this->_clients[i].getLastReqTime() << ", time now: " << time(NULL) << ", last req time: " << this->_clients[i].getLastReqTime() << std::endl;
+		if (time(NULL) - this->_clients[i].getLastReqTime() > CONN_TIMEOUT)
+		{
+			// std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
+			FD_CLR(this->_clients[i].getSocket(), &this->_read_sockets);
+			FD_CLR(this->_clients[i].getSocket(), &this->_write_sockets);
+			close(this->_clients[i].getSocket());
+			this->removeClient(this->_clients[i].getSocket());
+			std::cout << std::endl;
+		}
 	}
 }
 

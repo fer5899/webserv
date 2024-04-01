@@ -107,7 +107,7 @@ void	Response::handleCGI()
 			perror("dup2");
 			exit(EXIT_FAILURE);
 		}
-		
+
        int devNull = open("/dev/null", O_WRONLY);
         if (devNull != -1) {
             dup2(devNull, STDERR_FILENO);
@@ -115,6 +115,9 @@ void	Response::handleCGI()
         }
 		close(pipefd[0]);
 		close(pipefd[1]);
+
+		signal(SIGALRM, exit);
+		alarm(CGI_TIMEOUT);
 
 		std::vector<char *> args;
 		args.push_back(const_cast<char *>(executor.c_str()));

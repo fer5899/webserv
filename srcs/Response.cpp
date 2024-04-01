@@ -284,7 +284,7 @@ void	Response::setDateServer()
 	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
 	std::string date = std::string(buffer);
 
-	_headers_str.append("Server: Webserv42\r\n");
+	_headers_str.append("Server: " + _client->getServer()->getServerName() + "\r\n");
 	_headers_str.append("Date: " + date + "\r\n");
 
 }

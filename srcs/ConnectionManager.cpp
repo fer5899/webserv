@@ -15,6 +15,18 @@ ConnectionManager::ConnectionManager(Configuration &config)
 	this->_count = 0;
 	this->_servers = std::vector<Server>();
 	buildServers(config.getServers());
+	// Remove servers with repeated ports
+	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	{
+		for (std::vector<Server>::iterator it2 = it + 1; it2 != _servers.end(); it2++)
+		{
+			if (it->getPort() == it2->getPort())
+			{
+				it2 = _servers.erase(it2);
+				it2 = it;
+			}
+		}
+	}
 }
 
 ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 

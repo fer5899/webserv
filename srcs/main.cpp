@@ -1,6 +1,16 @@
 #include "../include/Server.hpp"
 #include "../include/ConnectionManager.hpp"
 #include "../include/Configuration.hpp"
+#include "../include/common.hpp"
+
+void	sigintHandler(int sig)
+{
+	if (sig == SIGINT)
+	{
+		std::cout << std::endl << RED "Webserv stopped" RESET << std::endl;
+		exit(0);
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -9,6 +19,7 @@ int main(int argc, char** argv)
 		std::cerr << RED "Usage: ./webserv [config_file]" RESET << std::endl;
 		return 1;
 	}
+	signal(SIGINT, sigintHandler);
 	std::string filename(argv[1]);
 	Configuration config(filename);
 	config.parseConfigFile(filename);

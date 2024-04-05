@@ -54,38 +54,38 @@ bool	Response::isCGI()
 }
 
 char** Response::getCGIEnv() {
-    std::vector<std::string> envStrings;
+	std::vector<std::string> envStrings;
 
-    // Set environment variables
-    envStrings.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    envStrings.push_back("REDIRECT_STATUS=200");
-    envStrings.push_back("REQUEST_METHOD=" + _request->getMethod());
-    envStrings.push_back("REQUEST_URI=" + _request->getPath());
-    envStrings.push_back("SCRIPT_NAME=" + getCGICmd());
-    envStrings.push_back("PATH_INFO=" + _request->getPath());
-    envStrings.push_back("PATH_TRANSLATED=" + buildFilesystemPath(_request->getPath()));
-    envStrings.push_back("SERVER_NAME=" + _client->getServer()->getServerName());
-    envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer()->getPort()));
-    envStrings.push_back("SERVER_SOFTWARE=Webserv42");
-    envStrings.push_back("BODY=" + _request->getBody());
+	// Set environment variables
+	envStrings.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	envStrings.push_back("REDIRECT_STATUS=200");
+	envStrings.push_back("REQUEST_METHOD=" + _request->getMethod());
+	envStrings.push_back("REQUEST_URI=" + _request->getPath());
+	envStrings.push_back("SCRIPT_NAME=" + getCGICmd());
+	envStrings.push_back("PATH_INFO=" + _request->getPath());
+	envStrings.push_back("PATH_TRANSLATED=" + buildFilesystemPath(_request->getPath()));
+	envStrings.push_back("SERVER_NAME=" + _client->getServer()->getServerName());
+	envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer()->getPort()));
+	envStrings.push_back("SERVER_SOFTWARE=Webserv42");
+	envStrings.push_back("BODY=" + _request->getBody());
 
-    // Add headers to env
-    std::map<std::string, std::string> headers = _request->getHeaders();
-    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
-        std::string key = "HTTP_" + it->first;
-        std::transform(key.begin(), key.end(), key.begin(), ::toupper);
-        envStrings.push_back(key + "=" + it->second);
-    }
+	// Add headers to env
+	std::map<std::string, std::string> headers = _request->getHeaders();
+	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		std::string key = "HTTP_" + it->first;
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+		envStrings.push_back(key + "=" + it->second);
+	}
 
-    // Add environment variables from the server
-    char** envp_c = new char*[envStrings.size() + 1];
-    for (size_t i = 0; i < envStrings.size(); ++i) {
-        envp_c[i] = new char[envStrings[i].size() + 1];
-        std::strcpy(envp_c[i], envStrings[i].c_str());
-    }
-    envp_c[envStrings.size()] = NULL;
+	// Add environment variables from the server
+	char** envp_c = new char*[envStrings.size() + 1];
+	for (size_t i = 0; i < envStrings.size(); ++i) {
+		envp_c[i] = new char[envStrings[i].size() + 1];
+		std::strcpy(envp_c[i], envStrings[i].c_str());
+	}
+	envp_c[envStrings.size()] = NULL;
 
-    return envp_c;
+	return envp_c;
 }
 
 void	Response::handleCGI()
@@ -95,11 +95,11 @@ void	Response::handleCGI()
 	char **const envp = getCGIEnv();
 	std::stringstream output;
 
-    int pipefd[2];
-    if (pipe(pipefd) == -1)
+	int pipefd[2];
+	if (pipe(pipefd) == -1)
 		return setErrorResponse(500);
-    pid_t pid = fork();
-    if (pid == -1)
+	pid_t pid = fork();
+	if (pid == -1)
 		return setErrorResponse(500);
 
 	if (pid == 0) {
@@ -107,31 +107,40 @@ void	Response::handleCGI()
 			perror("dup2");
 			exit(EXIT_FAILURE);
 		}
-		
-       int devNull = open("/dev/null", O_WRONLY);
-        if (devNull != -1) {
-            dup2(devNull, STDERR_FILENO);
-            close(devNull);
-        }
+
+	   int devNull = open("/dev/null", O_WRONLY);
+		if (devNull != -1) {
+			dup2(devNull, STDERR_FILENO);
+			close(devNull);
+		}
 		close(pipefd[0]);
 		close(pipefd[1]);
+
+		signal(SIGALRM, exit);
+		alarm(CGI_TIMEOUT);
 
 		std::vector<char *> args;
 		args.push_back(const_cast<char *>(executor.c_str()));
 		args.push_back(const_cast<char *>(programPath.c_str()));
 		args.push_back(NULL);
-
+		std::string path = buildFilesystemPath(_request->getPath());
+		size_t pos = path.find_last_of('/');
+		if (pos != std::string::npos)
+		{
+			std::string dir = path.substr(0, pos);
+			chdir(dir.c_str());
+		}
 		if (execve(executor.c_str(), &args[0], envp) == -1) {
 			perror("execve");
 			exit(EXIT_FAILURE);
 		}
 	} else {
-        int status;
-        if (waitpid(pid, &status, 0) == -1)
-            return setErrorResponse(500);
+		int status;
+		if (waitpid(pid, &status, 0) == -1)
+			return setErrorResponse(500);
 
-        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-            return setErrorResponse(500);
+		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+			return setErrorResponse(500);
 
 		close(pipefd[1]);
 
@@ -157,12 +166,12 @@ void	Response::buildHttpResponse()
 	_location = matchLocation();
 	if (!_location)
 		return (setErrorResponse(404));
-	// Check if the method of the request is allowed in the location
-	if (!checkValidMethod())
-		return (setErrorResponse(405));
 	// Handle redirects
 	if (_location->getRedirCode() > 0)
 		return (setRedirection());
+	// Check if the method of the request is allowed in the location
+	if (!checkValidMethod())
+		return (setErrorResponse(405));
 	// Select behavior based on method of the request
 	if (isCGI())
 		return handleCGI();
@@ -284,7 +293,7 @@ void	Response::setDateServer()
 	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
 	std::string date = std::string(buffer);
 
-	_headers_str.append("Server: Webserv42\r\n");
+	_headers_str.append("Server: " + _client->getServer()->getServerName() + "\r\n");
 	_headers_str.append("Date: " + date + "\r\n");
 
 }

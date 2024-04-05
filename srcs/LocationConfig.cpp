@@ -134,7 +134,7 @@ void LocationConfig::printLocationConfig()
 
 std::string LocationConfig::getPath() const
 {
-	if (!isAbsPath(_path))
+	if (!isAbsPath(_path) || (_path.size() > 1 && *(_path.end() - 1) == '/'))
 	{
 		std::cerr << RED "Error: Invalid location path: " << _path << RESET << std::endl;
 		exit(1);

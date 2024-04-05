@@ -595,3 +595,10 @@ void	Response::handleDeleteFile()
 	_http_response = _status + _headers_str + "\r\n";
 }
 
+bool	Response::keepAlive()
+{
+	if (_location && _location->getRedirCode() != 0)
+		return (false);
+	return (true);
+}
+

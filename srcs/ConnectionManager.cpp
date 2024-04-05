@@ -178,16 +178,7 @@ void ConnectionManager::runServers()
 				{
 					std::cout << "Data sent" << std::endl;
 					client->setLastReqTime();
-					if (!client->getRequest()->keepAlive())
-					{
-						std::cout << "Keep-Alive: false" << std::endl;
-						FD_CLR(i, &this->_write_sockets);
-						close(i);
-						this->removeClient(i);
-						std::cout << "Connection closed" << std::endl;
-						std::cout << std::endl;
-					}
-					else
+					if (client->getRequest()->keepAlive() && client->getResponse()->keepAlive())
 					{
 						std::cout << "Keep-Alive: true" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
@@ -196,6 +187,15 @@ void ConnectionManager::runServers()
 						delete client->getResponse();
 						client->setRequest(NULL);
 						client->setResponse(NULL);
+					}
+					else
+					{
+						std::cout << "Keep-Alive: false" << std::endl;
+						FD_CLR(i, &this->_write_sockets);
+						close(i);
+						this->removeClient(i);
+						std::cout << "Connection closed" << std::endl;
+						std::cout << std::endl;
 					}
 						
 				}

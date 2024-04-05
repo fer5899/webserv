@@ -47,15 +47,17 @@ void ConnectionManager::runServers()
 	fd_set read_sockets_copy, write_sockets_copy;
 
 	this->initSets();
+	struct timeval timer;
 	std::cout << "Running servers: waiting for connections..." << std::endl;
 	
 	while (1)
 	{
 		// std::cout << "Count: " << this->_count++ << "\n";
+		timer.tv_sec = 1;
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
 
-		int	activity = select(this->_max_socket + 1, &read_sockets_copy, &write_sockets_copy, NULL, NULL);
+		int	activity = select(this->_max_socket + 1, &read_sockets_copy, &write_sockets_copy, NULL, &timer);
 		if (activity < 0)
 		{
 			std::cerr << "Select error: " << strerror(errno) << std::endl;
@@ -277,7 +279,7 @@ void ConnectionManager::checkTimeouts()
 		// std::cout << "Time: " << time(NULL) - this->_clients[i].getLastReqTime() << ", time now: " << time(NULL) << ", last req time: " << this->_clients[i].getLastReqTime() << std::endl;
 		if (time(NULL) - this->_clients[i].getLastReqTime() > CONN_TIMEOUT)
 		{
-			// std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
+			std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
 			FD_CLR(this->_clients[i].getSocket(), &this->_read_sockets);
 			FD_CLR(this->_clients[i].getSocket(), &this->_write_sockets);
 			close(this->_clients[i].getSocket());

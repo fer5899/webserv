@@ -5,7 +5,7 @@
 #include "Client.hpp"
 #include "Configuration.hpp"
 
-#define BUFFER_SIZE 4000
+#define BUFFER_SIZE 100000
 
 class ConnectionManager
 {

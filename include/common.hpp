@@ -4,6 +4,7 @@
 /*----------------------DEFINITIONS & CONVENTIONS----------------------*/
 #define MAX_REQUEST_SIZE 1000000
 #define CONN_TIMEOUT 10
+#define CGI_TIMEOUT 3
 
 /*----------------------LIBRARIES----------------------*/
 #include <iostream>

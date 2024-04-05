@@ -167,8 +167,7 @@ std::string ServerConfig::getServerName() const
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << RED "Error: No server_name specified" << RESET << std::endl;
-		exit(1);
+		return "Rickinillo";
 	}
 }
 

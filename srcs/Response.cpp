@@ -6,6 +6,7 @@ Response::Response(Client *client, Request *request) : _client(client), _request
 	_status = "";
 	_headers_str = "";
 	setDateServer();
+	setCookies();
 	buildHttpResponse();
 }
 
@@ -307,7 +308,35 @@ void	Response::setDateServer()
 
 	_headers_str.append("Server: " + _client->getServer()->getServerName() + "\r\n");
 	_headers_str.append("Date: " + date + "\r\n");
+}
 
+void	Response::setCookies()
+{
+	char			buffer[100];
+	struct timeval	tv;
+	struct tm		*tm;
+
+	gettimeofday(&tv, NULL);
+	tm = localtime(&tv.tv_sec);
+	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
+	std::string date = std::string(buffer);
+
+	try
+	{
+		std::string cookies = _request->getHeaders().at("Cookie");
+		if (cookies.find("first_visit_" + _client->getServer()->getServerName()) == std::string::npos)
+		{
+			_headers_str.append("Set-Cookie: first_visit_" 
+				+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+		}
+	}
+	catch(const std::out_of_range& e)
+	{
+		_headers_str.append("Set-Cookie: first_visit_" 
+			+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+	}
+	_headers_str.append("Set-Cookie: last_visit_" 
+		+ _client->getServer()->getServerName() + "=" + date + "\r\n");
 }
 
 void	Response::setContentType(std::string filesys_path)

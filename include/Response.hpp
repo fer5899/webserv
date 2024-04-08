@@ -42,6 +42,7 @@ class Response
 		Location							*matchLocation();
 		void								setContentType(std::string filesys_path);
 		void								setDateServer();
+		void								setCookies();
 		void								setErrorResponse(int status);
 		void								setRedirection();
 		bool								checkValidMethod();

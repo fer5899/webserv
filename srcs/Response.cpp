@@ -52,8 +52,8 @@ bool	Response::isCGI()
 {
 	return _location->getCgi().size() > 0 && !getCGICmd().empty();
 }
-
-char** Response::getCGIEnv() {
+std::vector<std::string> Response::getCGIEnv()
+{
 	std::vector<std::string> envStrings;
 
 	// Set environment variables
@@ -72,28 +72,29 @@ char** Response::getCGIEnv() {
 	// Add headers to env
 	std::map<std::string, std::string> headers = _request->getHeaders();
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
-		std::string key = "HTTP_" + it->first;
-		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
-		envStrings.push_back(key + "=" + it->second);
+		std::string envVar = "HTTP_" + it->first;
+		std::transform(envVar.begin(), envVar.end(), envVar.begin(), ::toupper);
+		envStrings.push_back(envVar + "=" + it->second);
 	}
 
-	// Add environment variables from the server
-	char** envp_c = new char*[envStrings.size() + 1];
-	for (size_t i = 0; i < envStrings.size(); ++i) {
-		envp_c[i] = new char[envStrings[i].size() + 1];
-		std::strcpy(envp_c[i], envStrings[i].c_str());
-	}
-	envp_c[envStrings.size()] = NULL;
-
-	return envp_c;
+	return envStrings;
 }
 
-void	Response::handleCGI()
+void Response::handleCGI()
 {
 	const std::string &executor = getCGICmd();
 	const std::string &programPath = buildFilesystemPath(_request->getPath());
-	char **const envp = getCGIEnv();
 	std::stringstream output;
+
+	// Implementación utilizando std::vector<std::string> para envp_c
+	std::vector<std::string> envStrings = getCGIEnv();
+	std::vector<const char*> envp_c;
+	envp_c.reserve(envStrings.size() + 1); // +1 para el terminador NULL
+
+	for (std::vector<std::string>::iterator it = envStrings.begin(); it != envStrings.end(); ++it) {
+		envp_c.push_back(it->c_str());
+	}
+	envp_c.push_back(nullptr);
 
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -122,7 +123,7 @@ void	Response::handleCGI()
 		std::vector<char *> args;
 		args.push_back(const_cast<char *>(executor.c_str()));
 		args.push_back(const_cast<char *>(programPath.c_str()));
-		args.push_back(NULL);
+		args.push_back(nullptr);
 		std::string path = buildFilesystemPath(_request->getPath());
 		size_t pos = path.find_last_of('/');
 		if (pos != std::string::npos)
@@ -130,7 +131,7 @@ void	Response::handleCGI()
 			std::string dir = path.substr(0, pos);
 			chdir(dir.c_str());
 		}
-		if (execve(executor.c_str(), &args[0], envp) == -1) {
+		if (execve(executor.c_str(), &args[0], const_cast<char* const*>(envp_c.data())) == -1) {
 			perror("execve");
 			exit(EXIT_FAILURE);
 		}
@@ -156,6 +157,7 @@ void	Response::handleCGI()
 	_headers_str.append("Content-Length: " + numberToString(output.str().size()) + "\r\n");
 	_http_response = _status + _headers_str + "\r\n" + output.str() + "\r\n";
 }
+
 
 void	Response::buildHttpResponse()
 {

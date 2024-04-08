@@ -14,6 +14,9 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <sys/wait.h>
+#include <iomanip>
+#include <sys/time.h>
 #include "utils.hpp"
 
 /*----------------------COLORS----------------------*/

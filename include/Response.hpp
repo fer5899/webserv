@@ -68,6 +68,7 @@ class Response
 		~Response();
 
 		std::string	&getHttpResponse();
+		bool		keepAlive();
 
 };
 

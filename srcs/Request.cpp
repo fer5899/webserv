@@ -275,7 +275,7 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	if (Request.getErrorCode() != 0)
 	{
 		os << RED "Error code: " RESET << Request.getErrorCode() << std::endl;
-		return os;
+		// return os;
 	}
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;

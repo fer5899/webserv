@@ -134,7 +134,7 @@ void LocationConfig::printLocationConfig()
 
 std::string LocationConfig::getPath() const
 {
-	if (!isAbsPath(_path))
+	if (!isAbsPath(_path) || (_path.size() > 1 && *(_path.end() - 1) == '/'))
 	{
 		std::cerr << RED "Error: Invalid location path: " << _path << RESET << std::endl;
 		exit(1);
@@ -307,7 +307,7 @@ std::string LocationConfig::getUploadStore() const
 std::map<std::string, std::string> LocationConfig::getCgi() const
 {
 	std::map<std::string, std::string> cgi;
-	if (_cgiPath.empty() || _cgiExt.empty())
+	if (_cgiPath.empty() && _cgiExt.empty())
 		return cgi;
 	if (_cgiPath.size() != _cgiExt.size())
 	{

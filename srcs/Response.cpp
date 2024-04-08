@@ -167,7 +167,9 @@ void	Response::buildHttpResponse()
 	// Check if there is a location that matches the requested URL
 	_location = matchLocation();
 	if (!_location)
+	{
 		return (setErrorResponse(404));
+	}
 	// Handle redirects
 	if (_location->getRedirCode() > 0)
 		return (setRedirection());
@@ -234,7 +236,15 @@ Location	*Response::matchLocation()
 		}
 	}
 	if (max_loc_size)
+	{
+		if (max_loc_size == 1)
+			return (matched_loc);
+		if (req_path.size() > max_loc_size && req_path[max_loc_size] != '/')
+		{
+			return (NULL);
+		}
 		return (matched_loc);
+	}
 	return (NULL);
 }
 
@@ -444,10 +454,16 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 
 	if (!alias.empty())
 	{
-		filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
-		filesystem_path = alias + filesystem_path;
+		if (_location->getPath() != "/")
+		{
+			filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
+			filesystem_path = root + alias + filesystem_path;
+		}
+		else
+			filesystem_path = root + alias + request_path;
+		return (filesystem_path);
 	}
-	filesystem_path = root + filesystem_path;
+	filesystem_path = root + request_path;
 
 	return (filesystem_path);
 }
@@ -455,7 +471,11 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 void	Response::handleGetDirectory(std::string filesys_dir_path)
 {
 	// Check if the location has an index defined
-	std::string filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
+	std::string filesys_index_path;
+	if (filesys_dir_path == "/")
+		filesys_index_path = filesys_dir_path + _location->getIndex();
+	else
+		filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
 	struct stat fileStat;
 	if (access(filesys_index_path.c_str(), F_OK) == 0
 		&& stat(filesys_index_path.c_str(), &fileStat) == 0 
@@ -533,6 +553,10 @@ void	Response::parseUploadBody(std::string body, std::string boundary, std::vect
 
 void	Response::handleFileUpload()
 {
+	std::cout << _request->getPath() << std::endl;
+	std::cout << _location->getPath() << std::endl;
+	if (_request->getPath() != _location->getPath())
+		return setErrorResponse(404);
 	// Check if the location allows file uploads
 	std::string upload_store = _location->getUploadStore();
 	if (upload_store.empty())
@@ -595,5 +619,12 @@ void	Response::handleDeleteFile()
 	_status = "HTTP/1.1 204 No Content\r\n";
 	_headers_str.append("Content-Length: 0\r\n");
 	_http_response = _status + _headers_str + "\r\n";
+}
+
+bool	Response::keepAlive()
+{
+	if (_location && _location->getRedirCode() != 0)
+		return (false);
+	return (true);
 }
 

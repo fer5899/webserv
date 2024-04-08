@@ -3,11 +3,23 @@
 #include "../include/Configuration.hpp"
 #include "../include/common.hpp"
 
+ConnectionManager cm;
+
 void	sigintHandler(int sig)
 {
 	if (sig == SIGINT)
 	{
 		std::cout << std::endl << RED "Webserv stopped" RESET << std::endl;
+		for (int i = 0; i <= cm._max_socket; i++)
+		{
+			if (cm.getClientBySocket(i) != NULL)
+			{
+				if (cm.getClientBySocket(i)->getRequest() != NULL)
+					delete cm.getClientBySocket(i)->getRequest();
+				if (cm.getClientBySocket(i)->getResponse() != NULL)
+					delete cm.getClientBySocket(i)->getResponse();
+			}
+		}
 		exit(0);
 	}
 }
@@ -26,7 +38,7 @@ int main(int argc, char** argv)
 
 	config.printConfig();
 
-	ConnectionManager cm(config);
+	cm.buildServers(config.getServers());
 
 	cm.printServers();
 

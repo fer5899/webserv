@@ -324,16 +324,19 @@ void	Response::setCookies()
 	try
 	{
 		std::string cookies = _request->getHeaders().at("Cookie");
-		if (cookies.find("first_visit") == std::string::npos)
+		if (cookies.find("first_visit_" + _client->getServer()->getServerName()) == std::string::npos)
 		{
-			_headers_str.append("Set-Cookie: first_visit=" + date + "\r\n");
+			_headers_str.append("Set-Cookie: first_visit_" 
+				+ _client->getServer()->getServerName() + "=" + date + "\r\n");
 		}
 	}
 	catch(const std::out_of_range& e)
 	{
-		_headers_str.append("Set-Cookie: first_visit=" + date + "\r\n");
+		_headers_str.append("Set-Cookie: first_visit_" 
+			+ _client->getServer()->getServerName() + "=" + date + "\r\n");
 	}
-	_headers_str.append("Set-Cookie: last_visit=" + date + "\r\n");
+	_headers_str.append("Set-Cookie: last_visit_" 
+		+ _client->getServer()->getServerName() + "=" + date + "\r\n");
 }
 
 void	Response::setContentType(std::string filesys_path)

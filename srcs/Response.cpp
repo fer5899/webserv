@@ -5,6 +5,7 @@ Response::Response(Client *client, Request *request) : _client(client), _request
 {
 	_status = "";
 	_headers_str = "";
+	_location = NULL;
 	setDateServer();
 	setCookies();
 	buildHttpResponse();

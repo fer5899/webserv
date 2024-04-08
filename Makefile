@@ -11,7 +11,7 @@ CFLAGS = -Wall -Wextra  -fsanitize=address   #-Werror -std=c++98
 OBJ_DIR = objs/
 SRC = $(wildcard srcs/*.cpp)
 OBJS = $(patsubst srcs/%, $(OBJ_DIR)%, $(SRC:.cpp=.o))
-CONFS = configuration_files/goodconf.conf test/goodconf.conf
+CONFS = confs/default.conf confs/42test.conf
 
 ##########################################################################################################################
 
@@ -58,10 +58,10 @@ $(OBJ_DIR)%.o: srcs/%.cpp | $(OBJ_DIR)
 	@echo "$(GREEN)Compiling:$(DEFAULT) $<"
 
 $(CONFS):
-	@sed "s#\__PWD__#$(shell pwd)#g" configuration_files/template.conf > configuration_files/goodconf.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) configuration_files/goodconf.conf."
-	@sed "s#\__PWD__#$(shell pwd)#g" test/template.conf > test/goodconf.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) test/goodconf.conf."
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/default.conf > confs/default.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) default.conf."
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/42test.conf > confs/42test.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) 42test.conf."
 
 ##########################################################################################################################
 

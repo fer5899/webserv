@@ -165,18 +165,20 @@ bool Request::parseBodyRequisites()
 
 bool Request::parseBody(std::string& line)
 {
-	_body += line;
-	_bodySize -= line.size();
-	if (_bodySize < 0)
-	{
+	if (line.size() > _bodySize)
+	{	
+		_body += line.substr(0, _bodySize);
+		_bodySize = 0;
 		_errorCode = 413;
 		return true;
 	}
-	else if (_bodySize == 0)
-	{
+	else
+		_body += line;
+	_bodySize -= line.size();
+	if (_bodySize == 0)
 		return true;
-	}
 	return false;
+
 }
 
 bool	Request::parseBodyChunked(std::string line)
@@ -203,12 +205,13 @@ bool	Request::parseBodyChunked(std::string line)
 				return false;
 			_body += line.substr(0, chunkSize);
 			line.erase(0, chunkSize + 2);
-			_bodySize -= chunkSize;
-			if (_bodySize < 0)
+			if (_body.size() > _bodySize)
 			{
 				_errorCode = 413;
 				return true;
 			}
+			else if (_body.size() == _bodySize)
+				return true;
 		} catch (std::exception &e) {
 			_errorCode = 400;
 			return true;
@@ -222,7 +225,7 @@ bool	Request::parseBodyChunked(std::string line)
 bool Request::parseRequest(std::string request)
 {
 	int request_size = request.size();
-	if (request_size  == 0)
+	if (request_size == 0)
 	{
 		_errorCode = 400;
 		return true;
@@ -275,7 +278,7 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	if (Request.getErrorCode() != 0)
 	{
 		os << RED "Error code: " RESET << Request.getErrorCode() << std::endl;
-		// return os;
+		return os;
 	}
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;

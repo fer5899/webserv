@@ -532,7 +532,10 @@ void	Response::buildAutoindex(std::string filesys_dir_path)
 		_body = "<html><head><title>Index of " + _request->getPath() + "</title></head><body><h1>Index of " + _request->getPath() + "</h1><hr><pre>";
 		while ((ent = readdir(dir)) != NULL)
 		{
-			_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
+			if (std::string(ent->d_name) == ".")
+				_body.append("<a href=\"" + _request->getPath() + "\">" + ent->d_name + "</a><br>");
+			else
+				_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
 		}
 		buildStatus(200);
 		_headers_str.append("Content-Type: text/html\r\n");
@@ -620,6 +623,13 @@ void	Response::handleFileUpload()
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
 		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
+		// Replace spaces for underscores in filename using only C++98
+		for (size_t j = 0; j < file_path.size(); j++)
+		{
+			if (file_path[j] == ' ')
+				file_path[j] = '_';
+		}
+
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{

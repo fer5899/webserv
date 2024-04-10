@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookies</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Cookies showcase</h1>
+        <p>Below is the list of cookies saved by the client</p>
+        <div id="cookies"></div>
+    </div>
+
+    <footer>
+        <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
+    </footer>
+
+    <script>
+        // Función para obtener los parámetros de la URL
+        function getAllCookies() {
+			var cookies = document.cookie.split(';');
+			var cookiesObj = {};
+
+			cookies.forEach(function(cookie) {
+				var cookieParts = cookie.split('=');
+				var key = cookieParts[0].trim();
+				var value = cookieParts[1].trim();
+				cookiesObj[key] = value;
+			});
+
+			return cookiesObj;
+        }
+
+		function renderCookies(cookies) {
+			var cookiesHTML = '';
+
+			for (var key in cookies) {
+				cookiesHTML += '<p><strong>' + key + '</strong>: ' + cookies[key] + '</p>';
+			}
+
+			return cookiesHTML;
+		}
+
+        document.getElementById('cookies').innerHTML = renderCookies(getAllCookies());
+    </script>
+</body>
+
+</html>

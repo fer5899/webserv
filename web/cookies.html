@@ -12,7 +12,7 @@
     <div class="container">
         <h1>Cookies showcase</h1>
         <p>Below is the list of cookies saved by the client</p>
-        <div id="params"></div>
+        <div id="cookies"></div>
     </div>
 
     <footer>
@@ -21,17 +21,31 @@
 
     <script>
         // Función para obtener los parámetros de la URL
-        function getParams() {
-            const params = new URLSearchParams(window.location.search);
-            let paramsString = '';
-            for (const [key, value] of params.entries()) {
-                paramsString += `<p>${key}: ${value}</p>`;
-            }
-            return paramsString;
+        function getAllCookies() {
+			var cookies = document.cookie.split(';');
+			var cookiesObj = {};
+
+			cookies.forEach(function(cookie) {
+				var cookieParts = cookie.split('=');
+				var key = cookieParts[0].trim();
+				var value = cookieParts[1].trim();
+				cookiesObj[key] = value;
+			});
+
+			return cookiesObj;
         }
 
-        // Mostrar los parámetros en el elemento 'params' al cargar la página
-        document.getElementById('params').innerHTML = getParams();
+		function renderCookies(cookies) {
+			var cookiesHTML = '';
+
+			for (var key in cookies) {
+				cookiesHTML += '<p><strong>' + key + '</strong>: ' + cookies[key] + '</p>';
+			}
+
+			return cookiesHTML;
+		}
+
+        document.getElementById('cookies').innerHTML = renderCookies(getAllCookies());
     </script>
 </body>
 

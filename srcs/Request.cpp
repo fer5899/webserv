@@ -109,7 +109,7 @@ bool Request::parseBodyRequisites()
 {
 	if (_headers.find("Content-Type") == _headers.end())
 	{
-		_errorCode = 415;
+		_errorCode = 400;
 		return true;
 	}
 	if (_headers.find("Content-Length") != _headers.end())
@@ -206,14 +206,19 @@ bool Request::parseRequest(std::string request)
 	std::string::size_type pos = request.find("\n");
 	while (pos != std::string::npos && _state < 2)
 	{
-		if (pos > 0 && request[pos - 1] == '\r')
+		while (request[pos] && std::isspace(request[pos]))
 			pos--;
-		std::string line = _buffer + request.substr(0, pos);
+		std::string line = _buffer + request.substr(0, pos + 1);
+		size_t first = line.find_first_not_of(" \t\r\n");
+		size_t last = line.find_last_not_of(" \t\r\n");
+		if (first == std::string::npos)
+			first = 0;
+		if (last == std::string::npos)
+			last = line.size() - 1;
+		line = line.substr(first, last - first + 1);
 		_buffer = "";
-		if (request[pos] == '\r')
-			request.erase(0, pos + 2);
-		else
-			request.erase(0, pos + 1);
+		pos = request.find("\n");
+		request.erase(0, pos + 1);
 		if (_state == 0)
 		{
 			if (parseFirstLine(line))

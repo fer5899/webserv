@@ -31,6 +31,8 @@ class Client
 		Response	*getResponse();
 		int			getSocket() const;
 		Server		*getServer();
+		void 		clearRequest();
+		void		clearResponse();
 
 		void		setRequest(Request *request);
 		void		setResponse(Response *response);

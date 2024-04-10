@@ -73,3 +73,17 @@ void		Client::setLastReqTime()
 	// std::cout << "Last req time set to: " << _last_req_time << std::endl;
 }
 
+void		Client::clearRequest()
+{
+	if (_request)
+		delete _request;
+	_request = NULL;
+}
+
+void		Client::clearResponse()
+{
+	if (_response)
+		delete _response;
+	_response = NULL;
+}
+

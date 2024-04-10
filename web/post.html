@@ -11,15 +11,15 @@
 <body>
     <div class="container">
         <h1>POST Request Form</h1>
-        <form action="/submit" method="post">
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="redirectToPage()">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
 
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
 
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" rows="4" required></textarea>
+            <label for="file">File Upload:</label>
+            <input type="file" id="file" name="file" required>
 
             <button type="submit">Submit</button>
         </form>

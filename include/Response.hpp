@@ -37,29 +37,30 @@ class Response
 		Request								*_request;
 		Location							*_location;
 
-		std::string	generateTimestamp();
-		void		parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents);
-		Location	*matchLocation();
-		void		setContentType(std::string filesys_path);
-		void		setDateServer();
-		void		setErrorResponse(int status);
-		void		setRedirection();
-		bool		checkValidMethod();
-		bool		checkCGI();
-		void		executeCGI();
-		void		handleGetDirectory(std::string filesys_dir_path);
-		void		handleGetResource(std::string filesys_path);
-		void		handleFileUpload();
-		void		handleDeleteFile();
-		std::string	buildFilesystemPath(std::string request_path);
-		void		buildAutoindex(std::string filesys_dir_path);
-		void		buildSimpleErrorPage();
-		void		buildStatus(int status);
-		void		buildHttpResponse();
-		bool		isCGI();
-		void		handleCGI();
-		char**		getCGIEnv();
-		std::string	getCGICmd();
+		std::string							generateTimestamp();
+		void								parseUploadBody(std::string body, std::string boundary, std::vector<std::string> &form_elements_filenames, std::vector<std::string> &form_elements_contents);
+		Location							*matchLocation();
+		void								setContentType(std::string filesys_path);
+		void								setDateServer();
+		void								setCookies();
+		void								setErrorResponse(int status);
+		void								setRedirection();
+		bool								checkValidMethod();
+		bool								checkCGI();
+		void								executeCGI();
+		void								handleGetDirectory(std::string filesys_dir_path);
+		void								handleGetResource(std::string filesys_path);
+		void								handleFileUpload();
+		void								handleDeleteFile();
+		std::string							buildFilesystemPath(std::string request_path);
+		void								buildAutoindex(std::string filesys_dir_path);
+		void								buildSimpleErrorPage();
+		void								buildStatus(int status);
+		void								buildHttpResponse();
+		bool								isCGI();
+		void								handleCGI();
+		std::vector<std::string>			getCGIEnv();
+		std::string							getCGICmd();
 
 	public:
 		Response(Client *client, Request *request);
@@ -68,6 +69,7 @@ class Response
 		~Response();
 
 		std::string	&getHttpResponse();
+		bool		keepAlive();
 
 };
 

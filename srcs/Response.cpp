@@ -5,7 +5,9 @@ Response::Response(Client *client, Request *request) : _client(client), _request
 {
 	_status = "";
 	_headers_str = "";
+	_location = NULL;
 	setDateServer();
+	setCookies();
 	buildHttpResponse();
 }
 
@@ -52,8 +54,8 @@ bool	Response::isCGI()
 {
 	return _location->getCgi().size() > 0 && !getCGICmd().empty();
 }
-
-char** Response::getCGIEnv() {
+std::vector<std::string> Response::getCGIEnv()
+{
 	std::vector<std::string> envStrings;
 
 	// Set environment variables
@@ -72,28 +74,29 @@ char** Response::getCGIEnv() {
 	// Add headers to env
 	std::map<std::string, std::string> headers = _request->getHeaders();
 	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
-		std::string key = "HTTP_" + it->first;
-		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
-		envStrings.push_back(key + "=" + it->second);
+		std::string envVar = "HTTP_" + it->first;
+		std::transform(envVar.begin(), envVar.end(), envVar.begin(), ::toupper);
+		envStrings.push_back(envVar + "=" + it->second);
 	}
 
-	// Add environment variables from the server
-	char** envp_c = new char*[envStrings.size() + 1];
-	for (size_t i = 0; i < envStrings.size(); ++i) {
-		envp_c[i] = new char[envStrings[i].size() + 1];
-		std::strcpy(envp_c[i], envStrings[i].c_str());
-	}
-	envp_c[envStrings.size()] = NULL;
-
-	return envp_c;
+	return envStrings;
 }
 
-void	Response::handleCGI()
+void Response::handleCGI()
 {
 	const std::string &executor = getCGICmd();
 	const std::string &programPath = buildFilesystemPath(_request->getPath());
-	char **const envp = getCGIEnv();
 	std::stringstream output;
+
+	// Implementación utilizando std::vector<std::string> para envp_c
+	std::vector<std::string> envStrings = getCGIEnv();
+	std::vector<const char*> envp_c;
+	envp_c.reserve(envStrings.size() + 1); // +1 para el terminador NULL
+
+	for (std::vector<std::string>::iterator it = envStrings.begin(); it != envStrings.end(); ++it) {
+		envp_c.push_back(it->c_str());
+	}
+	envp_c.push_back(nullptr);
 
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -122,7 +125,7 @@ void	Response::handleCGI()
 		std::vector<char *> args;
 		args.push_back(const_cast<char *>(executor.c_str()));
 		args.push_back(const_cast<char *>(programPath.c_str()));
-		args.push_back(NULL);
+		args.push_back(nullptr);
 		std::string path = buildFilesystemPath(_request->getPath());
 		size_t pos = path.find_last_of('/');
 		if (pos != std::string::npos)
@@ -130,7 +133,7 @@ void	Response::handleCGI()
 			std::string dir = path.substr(0, pos);
 			chdir(dir.c_str());
 		}
-		if (execve(executor.c_str(), &args[0], envp) == -1) {
+		if (execve(executor.c_str(), &args[0], const_cast<char* const*>(envp_c.data())) == -1) {
 			perror("execve");
 			exit(EXIT_FAILURE);
 		}
@@ -157,6 +160,7 @@ void	Response::handleCGI()
 	_http_response = _status + _headers_str + "\r\n" + output.str() + "\r\n";
 }
 
+
 void	Response::buildHttpResponse()
 {
 	// Check if there was an error in the request parsing
@@ -165,7 +169,9 @@ void	Response::buildHttpResponse()
 	// Check if there is a location that matches the requested URL
 	_location = matchLocation();
 	if (!_location)
+	{
 		return (setErrorResponse(404));
+	}
 	// Handle redirects
 	if (_location->getRedirCode() > 0)
 		return (setRedirection());
@@ -232,7 +238,15 @@ Location	*Response::matchLocation()
 		}
 	}
 	if (max_loc_size)
+	{
+		if (max_loc_size == 1)
+			return (matched_loc);
+		if (req_path.size() > max_loc_size && req_path[max_loc_size] != '/')
+		{
+			return (NULL);
+		}
 		return (matched_loc);
+	}
 	return (NULL);
 }
 
@@ -295,7 +309,35 @@ void	Response::setDateServer()
 
 	_headers_str.append("Server: " + _client->getServer()->getServerName() + "\r\n");
 	_headers_str.append("Date: " + date + "\r\n");
+}
 
+void	Response::setCookies()
+{
+	char			buffer[100];
+	struct timeval	tv;
+	struct tm		*tm;
+
+	gettimeofday(&tv, NULL);
+	tm = localtime(&tv.tv_sec);
+	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
+	std::string date = std::string(buffer);
+
+	try
+	{
+		std::string cookies = _request->getHeaders().at("Cookie");
+		if (cookies.find("first_visit_" + _client->getServer()->getServerName()) == std::string::npos)
+		{
+			_headers_str.append("Set-Cookie: first_visit_" 
+				+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+		}
+	}
+	catch(const std::out_of_range& e)
+	{
+		_headers_str.append("Set-Cookie: first_visit_" 
+			+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+	}
+	_headers_str.append("Set-Cookie: last_visit_" 
+		+ _client->getServer()->getServerName() + "=" + date + "\r\n");
 }
 
 void	Response::setContentType(std::string filesys_path)
@@ -442,10 +484,16 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 
 	if (!alias.empty())
 	{
-		filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
-		filesystem_path = alias + filesystem_path;
+		if (_location->getPath() != "/")
+		{
+			filesystem_path = request_path.substr(_location->getPath().size(), std::string::npos);
+			filesystem_path = root + alias + filesystem_path;
+		}
+		else
+			filesystem_path = root + alias + request_path;
+		return (filesystem_path);
 	}
-	filesystem_path = root + filesystem_path;
+	filesystem_path = root + request_path;
 
 	return (filesystem_path);
 }
@@ -453,7 +501,11 @@ std::string	Response::buildFilesystemPath(std::string request_path)
 void	Response::handleGetDirectory(std::string filesys_dir_path)
 {
 	// Check if the location has an index defined
-	std::string filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
+	std::string filesys_index_path;
+	if (filesys_dir_path == "/")
+		filesys_index_path = filesys_dir_path + _location->getIndex();
+	else
+		filesys_index_path = filesys_dir_path + "/" + _location->getIndex();
 	struct stat fileStat;
 	if (access(filesys_index_path.c_str(), F_OK) == 0
 		&& stat(filesys_index_path.c_str(), &fileStat) == 0 
@@ -480,7 +532,10 @@ void	Response::buildAutoindex(std::string filesys_dir_path)
 		_body = "<html><head><title>Index of " + _request->getPath() + "</title></head><body><h1>Index of " + _request->getPath() + "</h1><hr><pre>";
 		while ((ent = readdir(dir)) != NULL)
 		{
-			_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
+			if (std::string(ent->d_name) == ".")
+				_body.append("<a href=\"" + _request->getPath() + "\">" + ent->d_name + "</a><br>");
+			else
+				_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
 		}
 		buildStatus(200);
 		_headers_str.append("Content-Type: text/html\r\n");
@@ -531,6 +586,10 @@ void	Response::parseUploadBody(std::string body, std::string boundary, std::vect
 
 void	Response::handleFileUpload()
 {
+	std::cout << _request->getPath() << std::endl;
+	std::cout << _location->getPath() << std::endl;
+	if (_request->getPath() != _location->getPath())
+		return setErrorResponse(404);
 	// Check if the location allows file uploads
 	std::string upload_store = _location->getUploadStore();
 	if (upload_store.empty())
@@ -564,6 +623,13 @@ void	Response::handleFileUpload()
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
 		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
+		// Replace spaces for underscores in filename using only C++98
+		for (size_t j = 0; j < file_path.size(); j++)
+		{
+			if (file_path[j] == ' ')
+				file_path[j] = '_';
+		}
+
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{
@@ -593,5 +659,12 @@ void	Response::handleDeleteFile()
 	_status = "HTTP/1.1 204 No Content\r\n";
 	_headers_str.append("Content-Length: 0\r\n");
 	_http_response = _status + _headers_str + "\r\n";
+}
+
+bool	Response::keepAlive()
+{
+	if (_location && _location->getRedirCode() != 0)
+		return (false);
+	return (true);
 }
 

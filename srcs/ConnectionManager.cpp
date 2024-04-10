@@ -15,6 +15,18 @@ ConnectionManager::ConnectionManager(Configuration &config)
 	this->_count = 0;
 	this->_servers = std::vector<Server>();
 	buildServers(config.getServers());
+	// Remove servers with repeated ports
+	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	{
+		for (std::vector<Server>::iterator it2 = it + 1; it2 != _servers.end(); it2++)
+		{
+			if (it->getPort() == it2->getPort())
+			{
+				it2 = _servers.erase(it2);
+				it2 = it;
+			}
+		}
+	}
 }
 
 ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 
@@ -166,16 +178,7 @@ void ConnectionManager::runServers()
 				{
 					std::cout << "Data sent" << std::endl;
 					client->setLastReqTime();
-					if (!client->getRequest()->keepAlive())
-					{
-						std::cout << "Keep-Alive: false" << std::endl;
-						FD_CLR(i, &this->_write_sockets);
-						close(i);
-						this->removeClient(i);
-						std::cout << "Connection closed" << std::endl;
-						std::cout << std::endl;
-					}
-					else
+					if (client->getRequest()->keepAlive() && client->getResponse()->keepAlive())
 					{
 						std::cout << "Keep-Alive: true" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
@@ -184,6 +187,15 @@ void ConnectionManager::runServers()
 						delete client->getResponse();
 						client->setRequest(NULL);
 						client->setResponse(NULL);
+					}
+					else
+					{
+						std::cout << "Keep-Alive: false" << std::endl;
+						FD_CLR(i, &this->_write_sockets);
+						close(i);
+						this->removeClient(i);
+						std::cout << "Connection closed" << std::endl;
+						std::cout << std::endl;
 					}
 						
 				}

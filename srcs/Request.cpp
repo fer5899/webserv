@@ -79,13 +79,7 @@ bool Request::parseFirstLine(std::string& line)
 	_method = tokens[0];
 	_path = tokens[1];
 	_version = tokens[2];
-	if (_method != "GET" && _method != "POST" && _method != "DELETE")
-	{
-		std::cerr << "Error code: " << _errorCode << " "<<std::endl;
-		_errorCode = 405;
-		return true;
-	}
-	else if (_version != "HTTP/1.1")
+	if (_version != "HTTP/1.1")
 	{
 		_errorCode = 505;
 		return true;
@@ -104,11 +98,7 @@ bool Request::parseHeaders(std::string& line)
 	}
 	std::string::size_type pos = line.find(": ");
 	if (pos == std::string::npos)
-	{
-		if (!line.empty())
-			_errorCode = 400;
 		return true;
-	}
 	std::string key = line.substr(0, pos);
 	std::string value = line.substr(pos + 2);
 	_headers[key] = value;
@@ -122,40 +112,19 @@ bool Request::parseBodyRequisites()
 		_errorCode = 415;
 		return true;
 	}
-	std::vector<std::string> validTypes;
-	validTypes.push_back("application/x-www-form-urlencoded");
-	validTypes.push_back("multipart/form-data");
-	validTypes.push_back("text/plain");
-	validTypes.push_back("application/json");
-	validTypes.push_back("application/xml");
-	validTypes.push_back("application/octet-stream");
-	validTypes.push_back("text/html");
-	validTypes.push_back("image/jpeg");
-	validTypes.push_back("image/png");
-	validTypes.push_back("audio/mpeg");
-	validTypes.push_back("application/pdf");
-	validTypes.push_back("text/css");
-	validTypes.push_back("application/javascript");
-	for (std::vector<std::string>::iterator it = validTypes.begin(); it != validTypes.end(); it++)
-	{
-		if (_headers["Content-Type"].find(*it) != std::string::npos)
-			break;
-		if (it == validTypes.end() - 1)
-		{
-			_errorCode = 415;
-			return true;
-		}
-	}
 	if (_headers.find("Content-Length") != _headers.end())
 	{
-	try {
-		size_t bodySize = std::stoul(_headers["Content-Length"]);
-		if (bodySize < _bodySize)
-			_bodySize = bodySize;
-	} catch (std::exception &e) {
-		_errorCode = 400;
-		return true;
-	}
+		try
+		{
+			size_t bodySize = std::stoul(_headers["Content-Length"]);
+			if (bodySize < _bodySize)
+				_bodySize = bodySize;
+		}
+		catch (std::exception &e)
+		{
+			_errorCode = 400;
+			return true;
+		}
 	}
 	_state = 2;
 	if (_headers.find("Transfer-Encoding") != _headers.end() && _headers["Transfer-Encoding"] == "chunked")
@@ -165,18 +134,20 @@ bool Request::parseBodyRequisites()
 
 bool Request::parseBody(std::string& line)
 {
-	_body += line;
-	_bodySize -= line.size();
-	if (_bodySize < 0)
-	{
+	if (line.size() > _bodySize)
+	{	
+		_body += line.substr(0, _bodySize);
+		_bodySize = 0;
 		_errorCode = 413;
 		return true;
 	}
-	else if (_bodySize == 0)
-	{
+	else
+		_body += line;
+	_bodySize -= line.size();
+	if (_bodySize == 0)
 		return true;
-	}
 	return false;
+
 }
 
 bool	Request::parseBodyChunked(std::string line)
@@ -203,12 +174,13 @@ bool	Request::parseBodyChunked(std::string line)
 				return false;
 			_body += line.substr(0, chunkSize);
 			line.erase(0, chunkSize + 2);
-			_bodySize -= chunkSize;
-			if (_bodySize < 0)
+			if (_body.size() > _bodySize)
 			{
 				_errorCode = 413;
 				return true;
 			}
+			else if (_body.size() == _bodySize)
+				return true;
 		} catch (std::exception &e) {
 			_errorCode = 400;
 			return true;
@@ -221,12 +193,10 @@ bool	Request::parseBodyChunked(std::string line)
 
 bool Request::parseRequest(std::string request)
 {
+	std::cout << YELLOW "Request buffer: " RESET << std::endl << request << std::endl;
 	int request_size = request.size();
-	if (request_size  == 0)
-	{
-		_errorCode = 400;
-		return true;
-	}
+	if (request_size == 0)
+		return false;
 	_size += request_size - countSubstring(request, "\n") - countSubstring(request, "\r");
 	if (_size > MAX_REQUEST_SIZE)
 	{

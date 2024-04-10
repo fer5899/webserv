@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET Request Page</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <h1>GET Request</h1>
+    <p>Below are some details of the GET request:</p>
+    <pre id="requestDetails"></pre>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var url = window.location.href;
+            var method = "GET";
+            var queryParams = "";
+
+            // Extract query parameters from the URL
+            var queryString = url.split("?")[1];
+            if (queryString) {
+                var params = queryString.split("&");
+                for (var i = 0; i < params.length; i++) {
+                    var pair = params[i].split("=");
+                    var paramName = decodeURIComponent(pair[0]);
+                    var paramValue = decodeURIComponent(pair[1]);
+                    queryParams += paramName + ": " + paramValue + "\n";
+                }
+            }
+
+            // Get date and time of the request
+            var dateTime = new Date().toLocaleString();
+
+            // Get user-agent string
+            var userAgent = navigator.userAgent;
+
+            var requestDetails = "URL: " + url + "\n" +
+                "Method: " + method + "\n" +
+                "Date and Time: " + dateTime + "\n" +
+                "User-Agent: " + userAgent + "\n";
+                // "Query Parameters:\n" + queryParams;
+
+            document.getElementById("requestDetails").textContent = requestDetails;
+        });
+    </script>
+
+	<div class="tenor-gif-embed" data-postid="27488571" data-share-method="host" data-aspect-ratio="1.77778" data-width="200px"><a href="https://tenor.com/view/obamium-gif-27488571">Obamium GIF</a>from <a href="https://tenor.com/search/obamium-gifs">Obamium GIFs</a></div> <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+    <footer>
+        <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
+    </footer>
+</body>
+
+</html>

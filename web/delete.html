@@ -64,9 +64,9 @@
         function deleteFile(filename) {
             if (confirm("Are you sure you want to delete the file '" + filename + "'?")) {
                 var xhr = new XMLHttpRequest();
-                xhr.open("DELETE", "/deleteFile?filename=" + encodeURIComponent(filename), true);
+                xhr.open("DELETE", "/upload/" + encodeURIComponent(filename), true);
                 xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
+                    if (xhr.readyState === 4 && xhr.status === 204) {
                         alert("File '" + filename + "' has been deleted successfully.");
                         loadFiles(); // Reload the file list after deletion
                     }

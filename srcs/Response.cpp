@@ -623,6 +623,13 @@ void	Response::handleFileUpload()
 	for (size_t i = 0; i < form_elements_filenames.size(); i++)
 	{
 		std::string file_path = upload_store + "/" + generateTimestamp() + "_" + form_elements_filenames[i];
+		// Replace spaces for underscores in filename using only C++98
+		for (size_t j = 0; j < file_path.size(); j++)
+		{
+			if (file_path[j] == ' ')
+				file_path[j] = '_';
+		}
+
 		std::ofstream file(file_path);
 		if (file.is_open())
 		{

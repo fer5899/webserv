@@ -17,6 +17,7 @@
 #include <sys/wait.h>
 #include <iomanip>
 #include <sys/time.h>
+#include <signal.h>
 #include "utils.hpp"
 
 /*----------------------COLORS----------------------*/

@@ -193,6 +193,7 @@ bool	Request::parseBodyChunked(std::string line)
 
 bool Request::parseRequest(std::string request)
 {
+	std::cout << YELLOW "Request buffer: " RESET << std::endl << request << std::endl;
 	int request_size = request.size();
 	if (request_size == 0)
 		return false;

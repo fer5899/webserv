@@ -1,51 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DELETE Request Page</title>
+    <title>File Management Page</title>
     <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
     <div class="container">
-        <h1>DELETE Resource Page</h1>
-        <p>Click on a resource below to delete it:</p>
-        <div class="resources">
-            <div class="resource">
-                <p>Resource 1</p>
-                <button onclick="deleteResource(1)">Delete</button>
-            </div>
-            <div class="resource">
-                <p>Resource 2</p>
-                <button onclick="deleteResource(2)">Delete</button>
-            </div>
-            <div class="resource">
-                <p>Resource 3</p>
-                <button onclick="deleteResource(3)">Delete</button>
-            </div>
-        </div>
+        <h1>DELETE Request</h1>
+        <p>Files in Upload Directory:</p>
+        <ul id="fileList"  style="text-align: left;"></ul>
+            <!-- File list will be dynamically populated here -->
+        </ul>
     </div>
-
     <footer>
         <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
     </footer>
 
     <script>
-        function deleteResource(id) {
-            if (confirm("Are you sure you want to delete resource " + id + "?")) {
-                // Simulating DELETE request using AJAX
+        document.addEventListener("DOMContentLoaded", function () {
+            loadFiles();
+        });
+
+        function loadFiles() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/upload", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var responseText = xhr.responseText;
+                    var fileListContainer = document.getElementById("fileList");
+                    fileListContainer.innerHTML = "";
+
+                    // Parse HTML to extract file names
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = responseText;
+                    var links = tempDiv.querySelectorAll('a[href]');
+                    links.forEach(function(link) {
+                        var fileName = link.textContent;
+
+                        // Ignore directories "." and ".."
+                        if (fileName !== '.' && fileName !== '..') {
+                            var listItem = document.createElement("li");
+                            listItem.textContent = fileName;
+
+                            var deleteButton = document.createElement("button");
+                            deleteButton.textContent = "Delete";
+                            deleteButton.setAttribute("data-filename", fileName);
+                            deleteButton.style.marginLeft = "10px"; // Add margin-right to the button
+                            deleteButton.addEventListener("click", function() {
+                                deleteFile(this.getAttribute("data-filename"));
+                            });
+                            
+                            listItem.appendChild(deleteButton);
+                            fileListContainer.appendChild(listItem);
+                        }
+                    });
+                }
+            };
+            xhr.send();
+        }
+
+        function deleteFile(filename) {
+            if (confirm("Are you sure you want to delete the file '" + filename + "'?")) {
                 var xhr = new XMLHttpRequest();
-                xhr.open("DELETE", "/resources/" + id, true);
+                xhr.open("DELETE", "/deleteFile?filename=" + encodeURIComponent(filename), true);
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === 4 && xhr.status === 200) {
-                        alert("Resource " + id + " has been deleted successfully.");
-                        // Optionally, you can remove the resource from the page after deletion
-                        var resource = document.querySelector(".resource:nth-child(" + id + ")");
-                        if (resource) {
-                            resource.remove();
-                        }
+                        alert("File '" + filename + "' has been deleted successfully.");
+                        loadFiles(); // Reload the file list after deletion
                     }
                 };
                 xhr.send();
@@ -53,5 +76,4 @@
         }
     </script>
 </body>
-
 </html>

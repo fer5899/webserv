@@ -532,7 +532,10 @@ void	Response::buildAutoindex(std::string filesys_dir_path)
 		_body = "<html><head><title>Index of " + _request->getPath() + "</title></head><body><h1>Index of " + _request->getPath() + "</h1><hr><pre>";
 		while ((ent = readdir(dir)) != NULL)
 		{
-			_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
+			if (std::string(ent->d_name) == ".")
+				_body.append("<a href=\"" + _request->getPath() + "\">" + ent->d_name + "</a><br>");
+			else
+				_body.append("<a href=\"" + _request->getPath() + "/" + ent->d_name + "\">" + ent->d_name + "</a><br>");
 		}
 		buildStatus(200);
 		_headers_str.append("Content-Type: text/html\r\n");

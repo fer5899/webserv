@@ -93,15 +93,15 @@ int ServerConfig::getPort() const
 		// Data at listen has form host:port
 		std::string listen = _config.at("listen");
 		size_t pos = listen.find(":");
+		if (pos == listen.size() - 1 || pos == 0)
+		{
+			std::cerr << RED "Error: Invalid port number, trailing or starting : - Server: " << getServerName() << RESET << std::endl;
+			exit(1);
+		}
 		in_addr_t host = 0;
 		if (pos == std::string::npos
 			&& inet_pton(AF_INET, listen.c_str(), &(host)) > 0)
 			return 80;
-		if (pos == listen.size() - 1)
-		{
-			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
-			exit(1);
-		}
 		int port_num = 0;
 		if (pos == std::string::npos)
 			port_num = std::stoi(listen);
@@ -121,36 +121,28 @@ int ServerConfig::getPort() const
 	}
 }
 
-in_addr_t	ServerConfig::getHost() const
+std::string	ServerConfig::getHost() const
 {
 	try
 	{
 		// Data at listen has form host:port
 		std::string listen = _config.at("listen");
 		size_t pos = listen.find(":");
-		if (pos == listen.size() - 1)
+		if (pos == listen.size() - 1 || pos == 0)
 		{
-			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
+			std::cerr << RED "Error: Invalid host, trailing or starting : - Server: " << getServerName() << RESET << std::endl;
 			exit(1);
 		}
+		if (pos == std::string::npos && listen.find(".") == std::string::npos)
+			return "127.0.0.1";
+		std::string host_str = listen.substr(0, pos);
 		in_addr_t host = 0;
-		if (pos == std::string::npos)
+		if (inet_pton(AF_INET, host_str.c_str(), &(host)) <= 0 && getPort() != 80)
 		{
-			if (inet_pton(AF_INET, listen.c_str(), &(host)) <= 0)
-			{
-				std::cerr << RED "Error: Invalid host - Server: " << getServerName() << RESET << std::endl;
-				exit(1);
-			}
+			std::cerr << RED "Error: Invalid host - Server: " << getServerName() << RESET << std::endl;
+			exit(1);
 		}
-		else
-		{
-			if (inet_pton(AF_INET, listen.substr(0, pos).c_str(), &(host)) <= 0)
-			{
-				std::cerr << RED "Error: Invalid host - Server: " << getServerName() << RESET << std::endl;
-				exit(1);
-			}
-		}
-		return host;
+		return host_str;
 	}
 	catch(const std::exception& e)
 	{

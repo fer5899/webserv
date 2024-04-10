@@ -29,6 +29,7 @@ class Server
 		int							getSocket() const;
 		std::string					getServerName() const;
 		int							getPort() const;
+		std::string					getHost() const;
 		std::map<int, std::string>	getDefError() const;
 		size_t						getMaxBodySize() const;
 		std::vector<Location>		&getLocations();
@@ -52,6 +53,7 @@ class Server
 
 	private:
 		int							_port;
+		std::string					_host;
 		int							_server_socket; // 0 - 65535
 		struct sockaddr_in			_address;
 		std::string					_server_name;

@@ -64,7 +64,6 @@ void ConnectionManager::runServers()
 	
 	while (1)
 	{
-		// std::cout << "Count: " << this->_count++ << "\n";
 		timer.tv_sec = 1;
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
@@ -118,6 +117,7 @@ void ConnectionManager::runServers()
 					std::cerr << "recv error: " << strerror(errno) << std::endl;
 					close(i);
 					FD_CLR(i, &this->_read_sockets);
+					client->clearRequest();
 					this->removeClient(i);
 				}
 				else if (bytesRead == 0)
@@ -125,6 +125,7 @@ void ConnectionManager::runServers()
 					std::cout << "Socket: " << i << " bytesRead == 0, closing connection" << std::endl;
 					close(i);
 					FD_CLR(i, &this->_read_sockets);
+					client->clearRequest();
 					this->removeClient(i);
 				}
 				else
@@ -153,6 +154,7 @@ void ConnectionManager::runServers()
 				if (client == NULL)
 				{
 					std::cerr << "Client not found" << std::endl;
+					client->clearRequest();
 					exit(EXIT_FAILURE);
 				}
 				client->setResponse(new Response(client, client->getRequest()));
@@ -166,12 +168,16 @@ void ConnectionManager::runServers()
 					std::cerr << "send error: " << strerror(errno) << std::endl;
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					client->clearRequest();
+					client->clearResponse();
 					this->removeClient(i);
 				}
 				else if (bytesSent == 0)
 				{
 					close(i);
 					FD_CLR(i, &this->_write_sockets);
+					client->clearRequest();
+					client->clearResponse();
 					this->removeClient(i);
 				}
 				else 
@@ -183,10 +189,7 @@ void ConnectionManager::runServers()
 						std::cout << "Keep-Alive: true" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
 						FD_SET(i, &this->_read_sockets);
-						delete client->getRequest();
-						delete client->getResponse();
-						client->setRequest(NULL);
-						client->setResponse(NULL);
+						
 					}
 					else
 					{
@@ -197,6 +200,8 @@ void ConnectionManager::runServers()
 						std::cout << "Connection closed" << std::endl;
 						std::cout << std::endl;
 					}
+					client->clearRequest();
+					client->clearResponse();
 						
 				}
 			}

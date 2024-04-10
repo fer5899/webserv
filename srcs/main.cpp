@@ -14,10 +14,8 @@ void	sigintHandler(int sig)
 		{
 			if (cm.getClientBySocket(i) != NULL)
 			{
-				if (cm.getClientBySocket(i)->getRequest() != NULL)
-					delete cm.getClientBySocket(i)->getRequest();
-				if (cm.getClientBySocket(i)->getResponse() != NULL)
-					delete cm.getClientBySocket(i)->getResponse();
+				cm.getClientBySocket(i)->clearRequest();
+				cm.getClientBySocket(i)->clearResponse();
 			}
 		}
 		exit(0);

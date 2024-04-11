@@ -5,17 +5,16 @@ NAME = webserv
 
 # Compiler and compilation flags
 CC = g++
-CFLAGS = -Wall -Wextra -Werror #-std=c++98 #-fsanitize=address   
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address   
 
 # Directory structure
 OBJ_DIR = objs/
 SRC = $(wildcard srcs/*.cpp)
 OBJS = $(patsubst srcs/%, $(OBJ_DIR)%, $(SRC:.cpp=.o))
 
-CONFS = $(DEFAULT_CONF) $(42TEST_CONF) $(UBUNTU_42TEST_CONF)
+CONFS = $(DEFAULT_CONF) $(MULTIPLE_PORTS_CONF)
 DEFAULT_CONF = confs/default.conf
-42TEST_CONF = confs/42test.conf
-UBUNTU_42TEST_CONF = confs/ubuntu_42test.conf
+MULTIPLE_PORTS_CONF = confs/multiple_ports.conf
 ##########################################################################################################################
 
 # General rules
@@ -60,19 +59,13 @@ $(OBJ_DIR)%.o: srcs/%.cpp | $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "$(GREEN)Compiling:$(DEFAULT) $<"
 
-
-$(UBUNTU_42TEST_CONF):
-	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_ubuntu_42test.conf > confs/ubuntu_42test.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) ubuntu_42test.conf"
-
-$(42TEST_CONF):
-	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_42test.conf > confs/42test.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) 42test.conf"
-
 $(DEFAULT_CONF):
 	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_default.conf > confs/default.conf
 	@echo "$(GREEN)Creating:$(DEFAULT) default.conf"
 
+$(MULTIPLE_PORTS_CONF):
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_multiple_ports.conf > confs/multiple_ports.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) multiple_ports.conf"
 
 ##########################################################################################################################
 

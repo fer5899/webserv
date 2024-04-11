@@ -44,7 +44,12 @@ std::string	Request::getMethod() const
 
 std::string	Request::getPath() const
 {
-	return _path;
+    std::string path = _path;
+    size_t pos = path.find('?');
+    if (pos != std::string::npos) {
+        path = path.substr(0, pos);
+    }
+    return path;
 }
 
 std::string	Request::getHTTPVersion() const

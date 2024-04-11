@@ -13,6 +13,14 @@
     <p>Below are some details of the GET request:</p>
     <pre id="requestDetails"></pre>
 
+    <form id="queryParamsForm">
+        <label for="paramName">Parameter Name:</label>
+        <input type="text" id="paramName" name="paramName">
+        <label for="paramValue">Parameter Value:</label>
+        <input type="text" id="paramValue" name="paramValue">
+        <button type="button" onclick="addQueryParam()">Add Query Param</button>
+    </form>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             var url = window.location.href;
@@ -40,14 +48,29 @@
             var requestDetails = "URL: " + url + "\n" +
                 "Method: " + method + "\n" +
                 "Date and Time: " + dateTime + "\n" +
-                "User-Agent: " + userAgent + "\n";
-                // "Query Parameters:\n" + queryParams;
+                "User-Agent: " + userAgent + "\n" +
+                "Query Parameters:\n" + queryParams;
 
             document.getElementById("requestDetails").textContent = requestDetails;
         });
+
+        function addQueryParam() {
+            var paramName = document.getElementById("paramName").value;
+            var paramValue = document.getElementById("paramValue").value;
+            var queryParams = paramName + "=" + paramValue;
+
+            var url = window.location.href;
+            if (url.indexOf("?") === -1) {
+                url += "?" + queryParams;
+            } else {
+                url += "&" + queryParams;
+            }
+
+            window.location.href = url;
+        }
     </script>
 
-	<div class="div_easter_egg"><img src="obamium.gif" class="gif_class"> </div>
+    <div class="div_easter_egg"><img src="obamium.gif" class="gif_class"></div>
     <footer>
         <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
     </footer>

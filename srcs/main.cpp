@@ -21,9 +21,24 @@ void	sigintHandler(int sig)
 		exit(0);
 	}
 }
+void printLogo()
+{
+	std::cout << "\n" << BLUE << std::endl;
+	std::cout << "██╗    ██╗███████╗██████╗ ███████╗███████╗██████╗ ██╗   ██╗" << std::endl;
+	std::cout << "██║    ██║██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗██║   ██║" << std::endl;
+	std::cout << "██║ █╗ ██║█████╗  ██████╔╝███████╗█████╗  ██████╔╝██║   ██║" << std::endl;
+	std::cout << "██║███╗██║██╔══╝  ██╔══██╗╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝" << std::endl;
+	std::cout << "╚███╔███╔╝███████╗██████╔╝███████║███████╗██║  ██║ ╚████╔╝ " << std::endl;
+	std::cout << " ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  " << std::endl;
+	std::cout << "\n" << CYAN << std::endl;
+	std::cout << "---------------------  Created by -------------------------" << std::endl;
+	std::cout << "------------  alvgomez && fgomez-d && javiersa ------------" << std::endl;
+	std::cout << RESET << std::endl;
+}
 
 int main(int argc, char** argv)
 {
+	printLogo();
 	if (argc != 2)
 	{
 		std::cerr << RED "Usage: ./webserv [config_file]" RESET << std::endl;
@@ -33,6 +48,8 @@ int main(int argc, char** argv)
 	std::string filename(argv[1]);
 	Configuration config(filename);
 	config.parseConfigFile(filename);
+
+	// config.printConfig();
 
 	cm.buildServers(config.getServers());
 

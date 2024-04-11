@@ -586,8 +586,6 @@ void	Response::parseUploadBody(std::string body, std::string boundary, std::vect
 
 void	Response::handleFileUpload()
 {
-	std::cout << _request->getPath() << std::endl;
-	std::cout << _location->getPath() << std::endl;
 	if (_request->getPath() != _location->getPath())
 		return setErrorResponse(404);
 	// Check if the location allows file uploads

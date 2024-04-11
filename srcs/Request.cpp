@@ -44,12 +44,12 @@ std::string	Request::getMethod() const
 
 std::string	Request::getPath() const
 {
-    std::string path = _path;
-    size_t pos = path.find('?');
-    if (pos != std::string::npos) {
-        path = path.substr(0, pos);
-    }
-    return path;
+	std::string path = _path;
+	size_t pos = path.find('?');
+	if (pos != std::string::npos) {
+		path = path.substr(0, pos);
+	}
+	return path;
 }
 
 std::string	Request::getHTTPVersion() const
@@ -198,7 +198,6 @@ bool	Request::parseBodyChunked(std::string line)
 
 bool Request::parseRequest(std::string request)
 {
-	std::cout << YELLOW "Request buffer: " RESET << std::endl << request << std::endl;
 	int request_size = request.size();
 	if (request_size == 0)
 		return false;
@@ -253,10 +252,7 @@ bool Request::parseRequest(std::string request)
 std::ostream& operator<<(std::ostream& os, const Request& Request)
 {
 	if (Request.getErrorCode() != 0)
-	{
-		os << RED "Error code: " RESET << Request.getErrorCode() << std::endl;
-		// return os;
-	}
+		os << RED "Error code detected in Request: " RESET << Request.getErrorCode() << std::endl;
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;
 	os << BLUE "URL: " RESET << Request.getPath() << std::endl;
@@ -272,7 +268,15 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	if (Request.getBody().size() > 0)
 	{
 		os << "--------------------------------" << std::endl;
-		os << BLUE "Body: " RESET << std::endl << Request.getBody() << std::endl;
+		os << BLUE "Body: " RESET << std::endl;
+		if (Request.getBody().size() > 300)
+		{
+			os << Request.getBody().substr(0, 300) << "..." << std::endl;
+		}
+		else
+		{
+			os << Request.getBody() << std::endl;
+		}
 	}
 	os << "--------------------------------" << std::endl;
 	return os;

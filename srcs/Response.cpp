@@ -668,3 +668,63 @@ bool	Response::keepAlive()
 	return (true);
 }
 
+std::string	Response::getStatus() const
+{
+	return _status;
+}
+
+std::string	Response::getBody() const
+{
+	return _body;
+}
+
+std::map<std::string, std::string> Response::getHeaders() const
+{
+	std::map<std::string, std::string> headers;
+	std::string header;
+	std::istringstream header_stream(_headers_str);
+
+	while (std::getline(header_stream, header, '\n'))
+	{
+		size_t pos = header.find(":");
+		if (pos != std::string::npos)
+		{
+			std::string key = header.substr(0, pos);
+			std::string value = header.substr(pos + 1);
+			headers[key] = value;
+		}
+	}
+	return headers;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const Response& response)
+{
+	os << BLUE "HTTP Response:" RESET << std::endl;
+	os << BLUE "Status: " RESET << response.getStatus() << std::endl;
+	os << BLUE "Headers:" RESET << std::endl;
+
+	std::map<std::string, std::string> headers = response.getHeaders();
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
+	{
+		os << CYAN << it->first << ":" << RESET << it->second << std::endl;
+	}
+
+	if (response.getBody().size() > 0)
+	{
+		os << "--------------------------------" << std::endl;
+		os << BLUE "Body: " RESET << std::endl;
+		if (response.getBody().size() > 300)
+		{
+			std::string body_substr = response.getBody().substr(0, 300);
+			os << body_substr << "..." << std::endl;
+		}
+		else
+		{
+			os << response.getBody() << std::endl;
+		}
+	}
+
+	os << "--------------------------------" << std::endl;
+	return os;
+}

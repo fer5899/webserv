@@ -2,78 +2,78 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GET Request Page</title>
-    <link rel="stylesheet" href="./style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>GET Request Page</title>
+	<link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-    <h1>GET Request</h1>
-    <p>Below are some details of the GET request:</p>
-    <pre id="requestDetails"></pre>
+	<h1>GET Request</h1>
+	<p>Below are some details of the GET request:</p>
+	<pre id="requestDetails"></pre>
 
-    <form id="queryParamsForm">
-        <label for="paramName">Parameter Name:</label>
-        <input type="text" id="paramName" name="paramName">
-        <label for="paramValue">Parameter Value:</label>
-        <input type="text" id="paramValue" name="paramValue">
-        <button type="button" onclick="addQueryParam()">Add Query Param</button>
-    </form>
+	<form id="queryParamsForm">
+		<label for="paramName">Parameter Name:</label>
+		<input type="text" id="paramName" name="paramName">
+		<label for="paramValue">Parameter Value:</label>
+		<input type="text" id="paramValue" name="paramValue">
+		<button type="button" onclick="addQueryParam()">Add Query Param</button>
+	</form>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var url = window.location.href;
-            var method = "GET";
-            var queryParams = "";
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			var url = window.location.href;
+			var method = "GET";
+			var queryParams = "";
 
-            // Extract query parameters from the URL
-            var queryString = url.split("?")[1];
-            if (queryString) {
-                var params = queryString.split("&");
-                for (var i = 0; i < params.length; i++) {
-                    var pair = params[i].split("=");
-                    var paramName = decodeURIComponent(pair[0]);
-                    var paramValue = decodeURIComponent(pair[1]);
-                    queryParams += paramName + ": " + paramValue + "\n";
-                }
-            }
+			// Extract query parameters from the URL
+			var queryString = url.split("?")[1];
+			if (queryString) {
+				var params = queryString.split("&");
+				for (var i = 0; i < params.length; i++) {
+					var pair = params[i].split("=");
+					var paramName = decodeURIComponent(pair[0]);
+					var paramValue = decodeURIComponent(pair[1]);
+					queryParams += paramName + ": " + paramValue + "\n";
+				}
+			}
 
-            // Get date and time of the request
-            var dateTime = new Date().toLocaleString();
+			// Get date and time of the request
+			var dateTime = new Date().toLocaleString();
 
-            // Get user-agent string
-            var userAgent = navigator.userAgent;
+			// Get user-agent string
+			var userAgent = navigator.userAgent;
 
-            var requestDetails = "URL: " + url + "\n" +
-                "Method: " + method + "\n" +
-                "Date and Time: " + dateTime + "\n" +
-                "User-Agent: " + userAgent + "\n" +
-                "Query Parameters:\n" + queryParams;
+			var requestDetails = "URL: " + url + "\n" +
+				"Method: " + method + "\n" +
+				"Date and Time: " + dateTime + "\n" +
+				"User-Agent: " + userAgent + "\n" +
+				"Query Parameters:\n" + queryParams;
 
-            document.getElementById("requestDetails").textContent = requestDetails;
-        });
+			document.getElementById("requestDetails").textContent = requestDetails;
+		});
 
-        function addQueryParam() {
-            var paramName = document.getElementById("paramName").value;
-            var paramValue = document.getElementById("paramValue").value;
-            var queryParams = paramName + "=" + paramValue;
+		function addQueryParam() {
+			var paramName = document.getElementById("paramName").value;
+			var paramValue = document.getElementById("paramValue").value;
+			var queryParams = paramName + "=" + paramValue;
 
-            var url = window.location.href;
-            if (url.indexOf("?") === -1) {
-                url += "?" + queryParams;
-            } else {
-                url += "&" + queryParams;
-            }
+			var url = window.location.href;
+			if (url.indexOf("?") === -1) {
+				url += "?" + queryParams;
+			} else {
+				url += "&" + queryParams;
+			}
 
-            window.location.href = url;
-        }
-    </script>
+			window.location.href = url;
+		}
+	</script>
 
-    <div class="div_easter_egg"><img src="obamium.gif" class="gif_class"></div>
-    <footer>
-        <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
-    </footer>
+	<div class="div_easter_egg"><img src="obamium.gif" class="gif_class"></div>
+	<footer>
+		<p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
+	</footer>
 </body>
 
 </html>

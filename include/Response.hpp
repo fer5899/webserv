@@ -71,8 +71,13 @@ class Response
 		std::string	&getHttpResponse();
 		bool		keepAlive();
 
+		std::string	getStatus() const;
+		std::string	getBody() const;
+		std::map<std::string, std::string>	getHeaders() const;
+
 };
 
+std::ostream& operator<<(std::ostream& os, const Response& response);
 #endif
 
 

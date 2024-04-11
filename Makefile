@@ -5,36 +5,39 @@ NAME = webserv
 
 # Compiler and compilation flags
 CC = g++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address   
+CFLAGS = -Wall -Wextra -Werror #-std=c++98 #-fsanitize=address   
 
 # Directory structure
 OBJ_DIR = objs/
 SRC = $(wildcard srcs/*.cpp)
 OBJS = $(patsubst srcs/%, $(OBJ_DIR)%, $(SRC:.cpp=.o))
-CONFS = confs/default.conf confs/42test.conf
 
+CONFS = $(DEFAULT_CONF) $(42TEST_CONF) $(UBUNTU_42TEST_CONF)
+DEFAULT_CONF = confs/default.conf
+42TEST_CONF = confs/42test.conf
+UBUNTU_42TEST_CONF = confs/ubuntu_42test.conf
 ##########################################################################################################################
 
 # General rules
-all: $(NAME)
+all: $(NAME) $(CONFS)
 
 clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(OBJ_DIR)
-	@echo "$(RED)Removing:$(DEFAULT) All objects from $(NAME)."
+	@echo "$(RED)Removing:$(DEFAULT) All objects from $(NAME)"
 
 fclean: clean
 	@rm -rf $(NAME)
-	@echo "$(RED)Removing:$(DEFAULT) Program $(NAME)."
+	@echo "$(RED)Removing:$(DEFAULT) Program $(NAME)"
 	@rm -rf $(CONFS)
-	@echo "$(RED)Removing:$(DEFAULT) $(CONFS)."
+	@echo "$(RED)Removing:$(DEFAULT) $(CONFS)"
 
 re: fclean all
 
 ##########################################################################################################################
 
 # Build rules
-$(NAME): $(OBJ_DIR) $(OBJS) $(CONFS)
+$(NAME): $(OBJ_DIR) $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 	@echo "$(MAGENTA)Program $(NAME) created successfully.$(DEFAULT)"
 
@@ -51,17 +54,25 @@ $(OBJ_DIR):
 	@echo "------------  alvgomez && fgomez-d && javiersa ------------"
 	@echo "$(DEFAULT)"
 	@mkdir -p $(OBJ_DIR)
-	@echo "$(GREEN)Creating:$(DEFAULT) $(OBJ_DIR) directory."
+	@echo "$(GREEN)Creating:$(DEFAULT) $(OBJ_DIR) directory"
 
 $(OBJ_DIR)%.o: srcs/%.cpp | $(OBJ_DIR)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "$(GREEN)Compiling:$(DEFAULT) $<"
 
-$(CONFS):
-	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/default.conf > confs/default.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) default.conf."
-	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/42test.conf > confs/42test.conf
-	@echo "$(GREEN)Creating:$(DEFAULT) 42test.conf."
+
+$(UBUNTU_42TEST_CONF):
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_ubuntu_42test.conf > confs/ubuntu_42test.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) ubuntu_42test.conf"
+
+$(42TEST_CONF):
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_42test.conf > confs/42test.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) 42test.conf"
+
+$(DEFAULT_CONF):
+	@sed "s#\__PWD__#$(shell pwd)#g" confs/templates/template_default.conf > confs/default.conf
+	@echo "$(GREEN)Creating:$(DEFAULT) default.conf"
+
 
 ##########################################################################################################################
 
@@ -71,8 +82,10 @@ USER := $(shell whoami)
 GITIGNORE = .gitignore
 
 $(GITIGNORE):
-	@echo ".*\n*.out\n*.o\n*.a\n*.dSYM\n!.gitignore" > .gitignore
-	@echo "$(GREEN)Creating:$(DEFAULT) Gitignore."
+	@echo ".*\n*.out\n*.o\n*.a\n*.dSYM\n" > .gitignore
+	@echo "$(GREEN)Creating:$(DEFAULT) Gitignore"
+
+gitignore: $(GITIGNORE)
 
 git: clean $(GITIGNORE)
 	@git add *
@@ -81,10 +94,6 @@ git: clean $(GITIGNORE)
 	@echo "$(BOLD)$(CYAN)Git:$(WHITE) Commit this changes with \"[$(DATETIME)] - Little changes by $(USER)\".$(DEFAULT)"
 	@git push
 	@echo "$(BOLD)$(GREEN)Git:$(WHITE) Pushing all changes.$(DEFAULT)"
-
-test_response: $(OBJS)
-	@$(CC) $(CFLAGS) -c srcs/test_response.cpp -o objs/test_response.o
-	@$(CC) $(CFLAGS) $(OBJS) -o test_response
 
 # Color codes for improved readability
 BOLD    := \033[1m
@@ -98,6 +107,6 @@ CYAN    := \033[36;1m
 WHITE   := \033[37;1m
 DEFAULT := \033[0m
 
-.PHONY: all clean fclean re git
+.PHONY: all clean fclean re git gitignore
 
 

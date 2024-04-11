@@ -162,7 +162,7 @@ void ConnectionManager::runServers()
 				const char* response = client->getResponse()->getHttpResponse().c_str();
 				std::cout << "Response: " << std::endl << response << std::endl;
 
-				ssize_t bytesSent = send(i, response, strlen(response), 0);
+				ssize_t bytesSent = send(i, client->getResponse()->getHttpResponse().c_str(), client->getResponse()->getHttpResponse().length(), 0);
 				if (bytesSent == -1)
 				{
 					std::cerr << "send error: " << strerror(errno) << std::endl;

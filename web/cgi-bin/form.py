@@ -17,7 +17,7 @@ def print_html_header():
     print("</head>")
     print("<body>")
     print("<h1>Python CGI Form</h1>")
-    print("<form method='post' action='script.py'>")
+    print("<form method='post' action='form_script.py'>")
     print("<label for='fname'>First Name:</label>")
     print("<input type='text' id='fname' name='fname' required><br>")
     print("<label for='lname'>Last Name:</label>")

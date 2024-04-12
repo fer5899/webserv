@@ -196,6 +196,7 @@ bool	Request::parseBodyChunked(std::string line)
 	_buffer = line;
 	return false;
 }
+#include <limits>
 
 bool Request::parseRequest(std::string request)
 {
@@ -211,7 +212,7 @@ bool Request::parseRequest(std::string request)
 	std::string::size_type pos = request.find("\n");
 	while (pos != std::string::npos && _state < 2)
 	{
-		while (pos > 0 && request[pos] && std::isspace(request[pos]))
+		while (pos != std::numeric_limits<size_t>::max() && std::isspace(request[pos]))
 			pos--;
 		std::string line = _buffer + request.substr(0, pos + 1);
 		size_t first = line.find_first_not_of(" \t\r\n");

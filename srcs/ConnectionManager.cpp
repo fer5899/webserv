@@ -4,7 +4,7 @@
 
 ConnectionManager::ConnectionManager()
 {
-	this->_servers = std::vector<Server>();
+	this->_servers = std::vector<std::vector<Server> >();
 	this->_max_socket = 0;
 	this->_count = 0;
 }
@@ -13,35 +13,17 @@ ConnectionManager::ConnectionManager(Configuration &config)
 {
 	this->_max_socket = 0;
 	this->_count = 0;
-	this->_servers = std::vector<Server>();
+	this->_servers = std::vector<std::vector<Server> >();
 	buildServers(config.getServers());
-	// Remove servers with repeated ports
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
-	{
-		for (std::vector<Server>::iterator it2 = it + 1; it2 != _servers.end(); it2++)
-		{
-			if (it->getPort() == it2->getPort())
-			{
-				it2 = _servers.erase(it2);
-				it2 = it;
-			}
-		}
-	}
-}
-
-ConnectionManager::ConnectionManager(std::vector<Server> servers) : _servers(servers) 
-{
-	this->_max_socket = 0;
-	this->_count = 0;
 }
 
 ConnectionManager::~ConnectionManager() {}
 
 void ConnectionManager::setUpServers()
 {
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
-		it->setUpServer();
+		this->_servers[i][0].setUpServer();
 	}
 }
 
@@ -89,7 +71,7 @@ void ConnectionManager::runServers()
 				FD_SET(new_socket, &this->_read_sockets);
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
-				Client client = Client(this->getServerBySocket(i), new_socket);
+				Client client = Client(this->getServerVectorBySocket(i), new_socket);
 				this->addClient(client);
 			}
 
@@ -105,7 +87,7 @@ void ConnectionManager::runServers()
 		
 				if (client->getRequest() == NULL)
 				{
-					client->setRequest(new Request(client->getServer()->getMaxBodySize()));
+					client->setRequest(new Request(client->getServerVector()));
 				}
 				
 				char buffer[BUFFER_SIZE];
@@ -149,7 +131,6 @@ void ConnectionManager::runServers()
 				if (client == NULL)
 				{
 					std::cerr << "Client not found" << std::endl;
-					client->clearRequest();
 					exit(EXIT_FAILURE);
 				}
 				client->setResponse(new Response(client, client->getRequest()));
@@ -189,10 +170,7 @@ void ConnectionManager::runServers()
 						FD_CLR(i, &this->_write_sockets);
 						close(i);
 						this->removeClient(i);
-					}
-					client->clearRequest();
-					client->clearResponse();
-						
+					}						
 				}
 			}
 		}
@@ -205,27 +183,56 @@ void ConnectionManager::initSets()
 	FD_ZERO(&this->_read_sockets);
 	FD_ZERO(&this->_write_sockets);
 
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
-		if (it->getSocket() > this->_max_socket)
-			this->_max_socket = it->getSocket();
-		FD_SET(it->getSocket(), &this->_read_sockets);
+		if (this->_servers[i][0].getSocket() > this->_max_socket)
+			this->_max_socket = this->_servers[i][0].getSocket();
+		FD_SET(this->_servers[i][0].getSocket(), &this->_read_sockets);
 	}
 }
 
 bool ConnectionManager::isServerSocket(int socket) const
 {
-	for (std::vector<Server>::const_iterator it = _servers.begin(); it != _servers.end(); it++)
+	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
-		if (it->getSocket() == socket)
+		if (this->_servers[i][0].getSocket() == socket)
 			return true;
 	}
 	return false;
 }
 
-void ConnectionManager::addServer(Server &server)
+void ConnectionManager::addServer(Server &new_server)
 {
-	this->_servers.push_back(server);
+	// If there are no servers, add the server to the first vector
+	if (this->_servers.size() == 0)
+	{
+		std::vector<Server> new_vector;
+		new_vector.push_back(new_server);
+		this->_servers.push_back(new_vector);
+	}
+	else
+	{
+		// If there are servers, check each vector to see if the server port and host is already in the vector
+		// If it is, add the server to that vector
+		bool added = false;
+		for (size_t i = 0; i < this->_servers.size(); i++)
+		{
+			if (this->_servers[i][0].getPort() == new_server.getPort() 
+				&& this->_servers[i][0].getHost() == new_server.getHost())
+			{
+				this->_servers[i].push_back(new_server);
+				added = true;
+				break;
+			}
+		}
+		// If the host and port is not in any of the vectors, create a new vector and add the server to that
+		if (!added)
+		{
+			std::vector<Server> new_vector;
+			new_vector.push_back(new_server);
+			this->_servers.push_back(new_vector);
+		}
+	}
 }
 
 void ConnectionManager::addClient(Client &client)
@@ -245,13 +252,13 @@ void ConnectionManager::removeClient(int socket)
 	}
 }
 
-Server *ConnectionManager::getServerBySocket(int socket)
+std::vector<Server> *ConnectionManager::getServerVectorBySocket(int socket)
 {
 	for (unsigned long i = 0; i < this->_servers.size(); i++)
 	{
-		if (this->_servers[i].getSocket() == socket)
+		if (this->_servers[i][0].getSocket() == socket)
 		{
-			Server *s = &(this->_servers[i]);
+			std::vector<Server> *s = &(this->_servers[i]);
 			return s;
 		}
 	}
@@ -273,9 +280,18 @@ Client *ConnectionManager::getClientBySocket(int socket)
 
 void ConnectionManager::printServers()
 {
-	for (std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	for (size_t i = 0; i < this->_servers.size(); i++)
 	{
-		it->printServer();
+		std::cout << "++++++ Server vector " << i << " +++++++" << std::endl;
+		for (size_t j = 0; j < this->_servers[i].size(); j++)
+		{
+			std::cout << "    " << "------ Server " << j << " --------" << std::endl;
+			std::cout << "        " << this->_servers[i][j].getPort() << std::endl;
+			std::cout << "        " << this->_servers[i][j].getHost() << std::endl;
+			std::cout << "        " << this->_servers[i][j].getServerName() << std::endl;
+			std::cout << "    ------------------------" << std::endl;
+		}
+		std::cout << "++++++++++++++++++++++++++++++" << std::endl;
 	}
 }
 

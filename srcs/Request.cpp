@@ -1,9 +1,13 @@
 #include "../include/Request.hpp"
 
 Request::Request() : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
-{}
-Request::Request(size_t maxBodySize) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(maxBodySize), _state(0)
-{}
+{
+	_server_vector = NULL;
+}
+Request::Request(std::vector<Server> *server_vector) : _path(""), _method(""), _version(""), _headers(), _body(""), _errorCode(0), _buffer(""), _size(0), _bodySize(MAX_REQUEST_SIZE), _state(0)
+{
+	_server_vector = server_vector;
+}
 
 Request::~Request()
 {}
@@ -67,6 +71,16 @@ int		Request::getErrorCode() const
 	return _errorCode;
 }
 
+std::string	Request::getHostname() const
+{
+	std::map<std::string, std::string>::const_iterator it = _headers.find("Host");
+	if (it == _headers.end())
+		return "";
+	if (it->second.find(':') != std::string::npos)
+		return it->second.substr(0, it->second.find(':'));
+	return it->second;
+}
+
 bool	Request::keepAlive() const
 {
 	std::map<std::string, std::string>::const_iterator it = _headers.find("Connection");
@@ -98,7 +112,10 @@ bool Request::parseHeaders(std::string& line)
 	if (line.empty())
 	{
 		if (_method == "POST")
+		{
+			_bodySize = getMaxBodySize();
 			return parseBodyRequisites();
+		}
 		return true;
 	}
 	std::string::size_type pos = line.find(": ");
@@ -136,6 +153,16 @@ bool Request::parseBodyRequisites()
 	if (_headers.find("Transfer-Encoding") != _headers.end() && _headers["Transfer-Encoding"] == "chunked")
 		_state = 3;
 	return false;
+}
+
+size_t Request::getMaxBodySize()
+{
+	for (std::vector<Server>::iterator it = _server_vector->begin(); it != _server_vector->end(); it++)
+	{
+		if (it->getServerName() == getHostname())
+			return (*it).getMaxBodySize();
+	}
+	return _server_vector->begin()->getMaxBodySize();
 }
 
 bool Request::parseBody(std::string& line)

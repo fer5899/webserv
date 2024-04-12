@@ -51,7 +51,9 @@ int main(int argc, char** argv)
 
 	// config.printConfig();
 
-	cm.buildServers(config.getServers());
+	cm = ConnectionManager(config);
+
+	// cm.printServers();
 
 	try
 	{

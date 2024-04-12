@@ -27,6 +27,7 @@ Server::Server(ServerConfig &config)
 {
 	_server_name = config.getServerName();
 	_port = config.getPort();
+	_host = config.getHost();
 	_error_page = config.getErrorPage();
 	_max_body_size = config.getMaxBodySize();
 	_server_socket = 0;
@@ -45,6 +46,7 @@ Server &Server::operator=(const Server &other)
 {
 	_server_name = other._server_name;
 	_port = other._port;
+	_host = other._host;
 	_error_page = other._error_page;
 	_max_body_size = other._max_body_size;
 	_locations = other._locations;
@@ -93,10 +95,14 @@ void Server::setUpServer()
 	// 	std::cerr << "Fcntl error: " << strerror(errno) << std::endl;
 	// 	exit(EXIT_FAILURE);
 	// }
-
 	this->_address.sin_family = AF_INET;
-	this->_address.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (inet_pton(AF_INET, this->getHost().c_str(), &this->_address.sin_addr.s_addr) <= 0)
+	{
+		std::cerr << "Wrong host in configuration file" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	this->_address.sin_port = htons(this->_port);
+
 
 	if (bind(this->_server_socket, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0)
 	{
@@ -208,7 +214,7 @@ void	Server::printServer()
 	std::cout << "--------------------------------" << std::endl;
 	std::cout << "Server name: " << _server_name << std::endl;
 	std::cout << "Port: " << _port << std::endl;
-	std::cout << "Host: " << inet_ntoa(_address.sin_addr) << std::endl;
+	std::cout << "Host: " << _host << std::endl;
 	std::cout << "Error pages: " << std::endl;
 	for (std::map<int, std::string>::const_iterator it = _error_page.begin(); it != _error_page.end(); it++)
 	{
@@ -230,78 +236,8 @@ void	Server::printLocations()
 	}
 }
 
+std::string	Server::getHost() const
+{
+	return _host;
+}
 
-// PARTE DE FERNANDO
-
-// std::map<std::string, std::string> decodeUrlEncodedFormData(const std::string& encodedFormData)
-// {
-// 	std::map<std::string, std::string> decodedData;
-// 	std::istringstream iss(encodedFormData);
-
-// 	std::string pair;
-// 	while (std::getline(iss, pair, '&'))
-// 	{
-// 		std::istringstream pairStream(pair);
-// 		std::string key_value;
-// 		while (std::getline(pairStream, key_value, '='))
-// 		{
-// 			std::string decodedKey = "";
-// 			std::string decodedValue = "";
-// 			 unsigned int decodeChar;
-// 			 int len = key_value.length();
-// 			 for (int i = 0; i < len; i++)
-// 			{
-// 				 if (key_value[i] == '%')
-// 				{
-// 					 sscanf(key_value.substr(i + 1, 2).c_str(), "%x", &decodeChar);
-// 					 decodedKey += static_cast<char>(decodeChar);
-// 					 i += 2;
-// 				 }
-// 				 else if (key_value[i] == '+')
-// 				{
-// 					 decodedKey += ' ';
-// 				 }
-// 				 else
-// 				{
-// 					 decodedKey += key_value[i];
-// 				 }
-// 			 }
-// 			 std::getline(pairStream, key_value, '=');
-// 			 len = key_value.length();
-// 			 for (int i = 0; i < len; i++)
-// 			{
-// 				 if (key_value[i] == '%')
-// 				{
-// 					 sscanf(key_value.substr(i + 1, 2).c_str(), "%x", &decodeChar);
-// 					 decodedValue += static_cast<char>(decodeChar);
-// 					 i += 2;
-// 				 }
-// 				 else if (key_value[i] == '+')
-// 				{
-// 					 decodedValue += ' ';
-// 				 }
-// 				 else
-// 				{
-// 					 decodedValue += key_value[i];
-// 				 }
-// 			 }
-// 			 decodedData[decodedKey] = decodedValue;
-// 		 }
-// 	 }
-
-// 	 return decodedData;
-// }
-
-// int main()
-// {
-// 	 std::string encodedData = "q=hello+world&lang=en%20o%20es&foo=bar&foo=baz&foo=qux&name=John+Doe&age=25&email=john%40doe.com";
-// 	 std::map<std::string, std::string> decodedData = decodeUrlEncodedFormData(encodedData);
-
-// 	 // Imprimir los pares clave-valor decodificados
-// 	for (std::map<std::string, std::string>::iterator it = decodedData.begin(); it != decodedData.end(); ++it)
-// 	{
-// 		td::cout << "Clave: " << it->first << ", Valor: " << it->second << std::endl;
-// 	}
-
-// 	 return 0;
-// }

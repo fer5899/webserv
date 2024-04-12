@@ -1,79 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Management Page</title>
-    <link rel="stylesheet" href="./style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>File Management Page</title>
+	<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>DELETE Request</h1>
-        <p>Files in Upload Directory:</p>
-        <ul id="fileList"  style="text-align: left;"></ul>
-            <!-- File list will be dynamically populated here -->
-        </ul>
-    </div>
-    <footer>
-        <p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
-    </footer>
+	<div class="container">
+		<h1>File Management</h1>
+		<p>Files in Upload Directory:</p>
+		<ul id="fileList" style="text-align: left;"></ul>
+	</div>
+	<footer>
+		<p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
+	</footer>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            loadFiles();
-        });
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			loadFiles();
+		});
 
-        function loadFiles() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/upload", true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var responseText = xhr.responseText;
-                    var fileListContainer = document.getElementById("fileList");
-                    fileListContainer.innerHTML = "";
+		function loadFiles() {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/upload", true);
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var responseText = xhr.responseText;
+					var fileListContainer = document.getElementById("fileList");
+					fileListContainer.innerHTML = "";
 
-                    // Parse HTML to extract file names
-                    var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = responseText;
-                    var links = tempDiv.querySelectorAll('a[href]');
-                    links.forEach(function(link) {
-                        var fileName = link.textContent;
+					// Parse HTML to extract file names
+					var tempDiv = document.createElement('div');
+					tempDiv.innerHTML = responseText;
+					var links = tempDiv.querySelectorAll('a[href]');
+					links.forEach(function(link) {
+						var fileName = link.textContent;
 
-                        // Ignore directories "." and ".."
-                        if (fileName !== '.' && fileName !== '..') {
-                            var listItem = document.createElement("li");
-                            listItem.textContent = fileName;
+						// Ignore directories "." and ".."
+						if (fileName !== '.' && fileName !== '..') {
+							var listItem = document.createElement("li");
+							listItem.textContent = fileName;
 
-                            var deleteButton = document.createElement("button");
-                            deleteButton.textContent = "Delete";
-                            deleteButton.setAttribute("data-filename", fileName);
-                            deleteButton.style.marginLeft = "10px"; // Add margin-right to the button
-                            deleteButton.addEventListener("click", function() {
-                                deleteFile(this.getAttribute("data-filename"));
-                            });
-                            
-                            listItem.appendChild(deleteButton);
-                            fileListContainer.appendChild(listItem);
-                        }
-                    });
-                }
-            };
-            xhr.send();
-        }
+							var deleteButton = document.createElement("button");
+							deleteButton.textContent = "Delete";
+							deleteButton.setAttribute("data-filename", fileName);
+							deleteButton.style.marginLeft = "10px"; // Add margin-right to the button
+							deleteButton.addEventListener("click", function() {
+								deleteFile(this.getAttribute("data-filename"));
+							});
 
-        function deleteFile(filename) {
-            if (confirm("Are you sure you want to delete the file '" + filename + "'?")) {
-                var xhr = new XMLHttpRequest();
-                xhr.open("DELETE", "/upload/" + encodeURIComponent(filename), true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 204) {
-                        alert("File '" + filename + "' has been deleted successfully.");
-                        loadFiles(); // Reload the file list after deletion
-                    }
-                };
-                xhr.send();
-            }
-        }
-    </script>
+							var downloadButton = document.createElement("button");
+							downloadButton.textContent = "Download";
+							downloadButton.setAttribute("data-filename", fileName);
+							downloadButton.style.marginLeft = "10px"; // Add margin-right to the button
+							downloadButton.addEventListener("click", function() {
+								downloadFile(this.getAttribute("data-filename"));
+							});
+
+							listItem.appendChild(deleteButton);
+							listItem.appendChild(downloadButton);
+							fileListContainer.appendChild(listItem);
+						}
+					});
+				}
+			};
+			xhr.send();
+		}
+
+		function deleteFile(filename) {
+			if (confirm("Are you sure you want to delete the file '" + filename + "'?")) {
+				var xhr = new XMLHttpRequest();
+				xhr.open("DELETE", "/upload/" + encodeURIComponent(filename), true);
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === 4 && xhr.status === 204) {
+						alert("File '" + filename + "' has been deleted successfully.");
+						loadFiles(); // Reload the file list after deletion
+					}
+				};
+				xhr.send();
+			}
+		}
+
+		function downloadFile(filename) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/upload/" + encodeURIComponent(filename), true);
+			xhr.responseType = "blob";
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var blob = xhr.response;
+					var link = document.createElement('a');
+					link.href = window.URL.createObjectURL(blob);
+					link.download = filename;
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+				}
+			};
+			xhr.send();
+		}
+	</script>
 </body>
 </html>

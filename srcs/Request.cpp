@@ -44,7 +44,12 @@ std::string	Request::getMethod() const
 
 std::string	Request::getPath() const
 {
-	return _path;
+	std::string path = _path;
+	size_t pos = path.find('?');
+	if (pos != std::string::npos) {
+		path = path.substr(0, pos);
+	}
+	return path;
 }
 
 std::string	Request::getHTTPVersion() const
@@ -109,14 +114,15 @@ bool Request::parseBodyRequisites()
 {
 	if (_headers.find("Content-Type") == _headers.end())
 	{
-		_errorCode = 415;
+		_errorCode = 400;
 		return true;
 	}
 	if (_headers.find("Content-Length") != _headers.end())
 	{
 		try
 		{
-			size_t bodySize = std::stoul(_headers["Content-Length"]);
+
+			size_t bodySize = std::strtoul(_headers["Content-Length"].c_str(), 0, 10);
 			if (bodySize < _bodySize)
 				_bodySize = bodySize;
 		}
@@ -162,7 +168,7 @@ bool	Request::parseBodyChunked(std::string line)
 		if (chunk.empty())
 			return true;
 		try {
-			size_t chunkSize = std::stoul(chunk, 0, 16);
+			size_t chunkSize = std::strtoul(chunk.c_str(), 0, 16);
 			if (chunkSize == 0)
 				return true;
 			if (chunkSize > _bodySize)
@@ -190,10 +196,10 @@ bool	Request::parseBodyChunked(std::string line)
 	_buffer = line;
 	return false;
 }
+#include <limits>
 
 bool Request::parseRequest(std::string request)
 {
-	std::cout << YELLOW "Request buffer: " RESET << std::endl << request << std::endl;
 	int request_size = request.size();
 	if (request_size == 0)
 		return false;
@@ -206,14 +212,19 @@ bool Request::parseRequest(std::string request)
 	std::string::size_type pos = request.find("\n");
 	while (pos != std::string::npos && _state < 2)
 	{
-		if (pos > 0 && request[pos - 1] == '\r')
+		while (pos != std::numeric_limits<size_t>::max() && std::isspace(request[pos]))
 			pos--;
-		std::string line = _buffer + request.substr(0, pos);
+		std::string line = _buffer + request.substr(0, pos + 1);
+		size_t first = line.find_first_not_of(" \t\r\n");
+		size_t last = line.find_last_not_of(" \t\r\n");
+		if (first == std::string::npos)
+			first = 0;
+		if (last == std::string::npos)
+			last = line.size() - 1;
+		line = line.substr(first, last - first + 1);
 		_buffer = "";
-		if (request[pos] == '\r')
-			request.erase(0, pos + 2);
-		else
-			request.erase(0, pos + 1);
+		pos = request.find("\n");
+		request.erase(0, pos + 1);
 		if (_state == 0)
 		{
 			if (parseFirstLine(line))
@@ -243,10 +254,7 @@ bool Request::parseRequest(std::string request)
 std::ostream& operator<<(std::ostream& os, const Request& Request)
 {
 	if (Request.getErrorCode() != 0)
-	{
-		os << RED "Error code: " RESET << Request.getErrorCode() << std::endl;
-		// return os;
-	}
+		os << RED "Error code detected in Request: " RESET << Request.getErrorCode() << std::endl;
 	os << "--------------------------------" << std::endl;
 	os << BLUE "Method: " RESET << Request.getMethod() << std::endl;
 	os << BLUE "URL: " RESET << Request.getPath() << std::endl;
@@ -262,7 +270,15 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 	if (Request.getBody().size() > 0)
 	{
 		os << "--------------------------------" << std::endl;
-		os << BLUE "Body: " RESET << std::endl << Request.getBody() << std::endl;
+		os << BLUE "Body: " RESET << std::endl;
+		if (Request.getBody().size() > 300)
+		{
+			os << Request.getBody().substr(0, 300) << "..." << std::endl;
+		}
+		else
+		{
+			os << Request.getBody() << std::endl;
+		}
 	}
 	os << "--------------------------------" << std::endl;
 	return os;

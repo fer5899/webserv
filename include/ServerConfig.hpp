@@ -19,7 +19,7 @@ class ServerConfig
 		void printServerConfig();
 
 		int getPort() const;
-		in_addr_t	getHost() const;
+		std::string	getHost() const;
 		std::string getServerName() const;
 		std::string getRoot() const;
 		std::string getIndex() const;

@@ -61,13 +61,13 @@ void ConnectionManager::runServers()
 	this->initSets();
 	struct timeval timer;
 	std::cout << "Running servers: waiting for connections..." << std::endl;
-	
+
 	while (1)
 	{
 		timer.tv_sec = 1;
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
-
+		
 		int	activity = select(this->_max_socket + 1, &read_sockets_copy, &write_sockets_copy, NULL, &timer);
 		if (activity < 0)
 		{
@@ -122,7 +122,7 @@ void ConnectionManager::runServers()
 				}
 				else if (bytesRead == 0)
 				{
-					std::cout << "Socket: " << i << " bytesRead == 0, closing connection" << std::endl;
+					// std::cout << "Socket: " << i << " bytesRead == 0, closing connection" << std::endl;
 					close(i);
 					FD_CLR(i, &this->_read_sockets);
 					client->clearRequest();
@@ -133,7 +133,6 @@ void ConnectionManager::runServers()
 					client->setLastReqTime();
 					buffer[bytesRead] = '\0';
 					std::string buffer_str(buffer);
-					// std::cout << buffer_str << std::endl;
 					
 					// Now we pass the buffer to the request handler and check if the request is complete
 					if (client->getRequest()->parseRequest(buffer_str))
@@ -166,10 +165,10 @@ void ConnectionManager::runServers()
 				if (bytesSent == -1)
 				{
 					std::cerr << "send error: " << strerror(errno) << std::endl;
-					close(i);
-					FD_CLR(i, &this->_write_sockets);
 					client->clearRequest();
 					client->clearResponse();
+					close(i);
+					FD_CLR(i, &this->_write_sockets);
 					this->removeClient(i);
 				}
 				else if (bytesSent == 0)
@@ -182,11 +181,11 @@ void ConnectionManager::runServers()
 				}
 				else 
 				{
-					std::cout << "Data sent" << std::endl;
+					// std::cout << "Data sent" << std::endl;
 					client->setLastReqTime();
 					if (client->getRequest()->keepAlive() && client->getResponse()->keepAlive())
 					{
-						std::cout << "Keep-Alive: true" << std::endl;
+						// std::cout << "Keep-Alive: true" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
 						FD_SET(i, &this->_read_sockets);
 						client->clearRequest();
@@ -194,13 +193,13 @@ void ConnectionManager::runServers()
 					}
 					else
 					{
-						std::cout << "Keep-Alive: false" << std::endl;
+						// std::cout << "Keep-Alive: false" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
 						client->clearRequest();
 						client->clearResponse();
 						close(i);
 						this->removeClient(i);
-						std::cout << "Connection closed" << std::endl;
+						// std::cout << "Connection closed" << std::endl;
 						std::cout << std::endl;
 					}	
 				}
@@ -293,10 +292,9 @@ void ConnectionManager::checkTimeouts()
 {
 	for(unsigned long i = 0; i < this->_clients.size(); i++)
 	{
-		// std::cout << "Time: " << time(NULL) - this->_clients[i].getLastReqTime() << ", time now: " << time(NULL) << ", last req time: " << this->_clients[i].getLastReqTime() << std::endl;
 		if (time(NULL) - this->_clients[i].getLastReqTime() > CONN_TIMEOUT)
 		{
-			std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
+			// std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
 			FD_CLR(this->_clients[i].getSocket(), &this->_read_sockets);
 			FD_CLR(this->_clients[i].getSocket(), &this->_write_sockets);
 			close(this->_clients[i].getSocket());

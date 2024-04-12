@@ -7,7 +7,7 @@ def print_html_header():
     print("<title>Python CGI Script</title>")
     print("</head>")
     print("<body>")
-    print("<h1>Environment Variable Values</h1>")
+    print("<h1>Form Data</h1>")
 
 def print_html_footer():
     print("</body>")

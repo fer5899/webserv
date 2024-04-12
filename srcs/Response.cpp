@@ -96,7 +96,7 @@ void Response::handleCGI()
 	for (std::vector<std::string>::iterator it = envStrings.begin(); it != envStrings.end(); ++it) {
 		envp_c.push_back(it->c_str());
 	}
-	envp_c.push_back(nullptr);
+	envp_c.push_back(NULL);
 
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -111,7 +111,7 @@ void Response::handleCGI()
 			exit(EXIT_FAILURE);
 		}
 
-	   int devNull = open("/dev/null", O_WRONLY);
+		int devNull = open("/dev/null", O_WRONLY);
 		if (devNull != -1) {
 			dup2(devNull, STDERR_FILENO);
 			close(devNull);
@@ -125,7 +125,7 @@ void Response::handleCGI()
 		std::vector<char *> args;
 		args.push_back(const_cast<char *>(executor.c_str()));
 		args.push_back(const_cast<char *>(programPath.c_str()));
-		args.push_back(nullptr);
+		args.push_back(NULL);
 		std::string path = buildFilesystemPath(_request->getPath());
 		size_t pos = path.find_last_of('/');
 		if (pos != std::string::npos)
@@ -154,10 +154,11 @@ void Response::handleCGI()
 		}
 		close(pipefd[0]);
 	}
+	_body = output.str() + "\r\n";
 	_status = "HTTP/1.1 200 OK\r\n";
 	_headers_str.append("Content-Type: text/html\r\n");
 	_headers_str.append("Content-Length: " + numberToString(output.str().size()) + "\r\n");
-	_http_response = _status + _headers_str + "\r\n" + output.str() + "\r\n";
+	_http_response = _status + _headers_str + "\r\n" + _body;
 }
 
 
@@ -193,7 +194,7 @@ void	Response::buildHttpResponse()
 
 std::string Response::generateTimestamp()
 {
-	std::time_t currentTime = std::time(nullptr);
+	std::time_t currentTime = std::time(NULL);
 	std::tm* localTime = std::localtime(&currentTime);
 	std::string	separator = "";
 
@@ -271,7 +272,7 @@ void	Response::handleGetResource(std::string filesys_path)
 		// Read contents of the file into response body if it's a file
 		if (S_ISREG(fileStat.st_mode))
 		{
-			std::ifstream stream(filesys_path);
+			std::ifstream stream(filesys_path.c_str());
 			std::stringstream buffer;
 			if (stream.is_open())
 			{
@@ -451,7 +452,7 @@ void	Response::setErrorResponse(int errorCode)
 			// Read contents of the file into response body if it's a file
 			if (S_ISREG(fileStat.st_mode))
 			{
-				std::ifstream stream(error_page_path);
+				std::ifstream stream(error_page_path.c_str());
 				std::stringstream buffer;
 				if (stream.is_open())
 				{
@@ -628,7 +629,7 @@ void	Response::handleFileUpload()
 				file_path[j] = '_';
 		}
 
-		std::ofstream file(file_path);
+		std::ofstream file(file_path.c_str());
 		if (file.is_open())
 		{
 			file << form_elements_contents[i];
@@ -698,8 +699,9 @@ std::map<std::string, std::string> Response::getHeaders() const
 
 std::ostream& operator<<(std::ostream& os, const Response& response)
 {
-	os << BLUE "HTTP Response:" RESET << std::endl;
-	os << BLUE "Status: " RESET << response.getStatus() << std::endl;
+	os << "--------------------------------" << std::endl;
+	os << BLUE "Status: " RESET << response.getStatus();
+	os << "--------------------------------" << std::endl;
 	os << BLUE "Headers:" RESET << std::endl;
 
 	std::map<std::string, std::string> headers = response.getHeaders();

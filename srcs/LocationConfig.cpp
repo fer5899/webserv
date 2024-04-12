@@ -252,7 +252,7 @@ int LocationConfig::getRedirCode() const
 			std::cerr << RED "Error: Invalid redir_code value - Location: " << getPath() << RESET << std::endl;
 			exit(1);
 		}
-		return std::stoi(redir_code);
+		return std::atoi(redir_code.c_str());
 	}
 	catch(const std::exception& e)
 	{

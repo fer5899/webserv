@@ -104,9 +104,9 @@ int ServerConfig::getPort() const
 			return 80;
 		int port_num = 0;
 		if (pos == std::string::npos)
-			port_num = std::stoi(listen);
+			port_num = std::atoi(listen.c_str());
 		else
-			port_num = std::stoi(listen.substr(pos + 1));
+			port_num = std::atoi(listen.substr(pos + 1).c_str());
 		if (port_num < 0 || port_num > 65535)
 		{
 			std::cerr << RED "Error: Invalid port number - Server: " << getServerName() << RESET << std::endl;
@@ -205,7 +205,7 @@ int	ServerConfig::getMaxBodySize() const
 {
 	try
 	{
-		return std::stoi(_config.at("client_max_body_size"));
+		return std::atoi(_config.at("client_max_body_size").c_str());
 	}
 	catch(const std::out_of_range& e)
 	{
@@ -240,7 +240,7 @@ std::map<int, std::string> ServerConfig::getErrorPage() const
 				int error_code = 0;
 				try
 				{
-					error_code = std::stoi(_error_page[j]);
+					error_code = std::atoi(_error_page[j].c_str());
 				}
 				catch(const std::exception& e)
 				{

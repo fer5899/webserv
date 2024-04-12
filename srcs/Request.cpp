@@ -121,7 +121,8 @@ bool Request::parseBodyRequisites()
 	{
 		try
 		{
-			size_t bodySize = std::stoul(_headers["Content-Length"]);
+
+			size_t bodySize = std::strtoul(_headers["Content-Length"].c_str(), 0, 10);
 			if (bodySize < _bodySize)
 				_bodySize = bodySize;
 		}
@@ -167,7 +168,7 @@ bool	Request::parseBodyChunked(std::string line)
 		if (chunk.empty())
 			return true;
 		try {
-			size_t chunkSize = std::stoul(chunk, 0, 16);
+			size_t chunkSize = std::strtoul(chunk.c_str(), 0, 16);
 			if (chunkSize == 0)
 				return true;
 			if (chunkSize > _bodySize)
@@ -210,7 +211,7 @@ bool Request::parseRequest(std::string request)
 	std::string::size_type pos = request.find("\n");
 	while (pos != std::string::npos && _state < 2)
 	{
-		while (request[pos] && std::isspace(request[pos]))
+		while (pos > 0 && request[pos] && std::isspace(request[pos]))
 			pos--;
 		std::string line = _buffer + request.substr(0, pos + 1);
 		size_t first = line.find_first_not_of(" \t\r\n");

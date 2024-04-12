@@ -5,7 +5,7 @@ NAME = webserv
 
 # Compiler and compilation flags
 CC = g++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address   
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -fsanitize=leak -g
 
 # Directory structure
 OBJ_DIR = objs/

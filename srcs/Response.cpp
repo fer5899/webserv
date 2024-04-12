@@ -724,7 +724,5 @@ std::ostream& operator<<(std::ostream& os, const Response& response)
 			os << response.getBody() << std::endl;
 		}
 	}
-
-	os << "--------------------------------" << std::endl;
 	return os;
 }

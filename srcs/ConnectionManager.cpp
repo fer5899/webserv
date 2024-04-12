@@ -42,7 +42,7 @@ void ConnectionManager::runServers()
 
 	this->initSets();
 	struct timeval timer;
-	std::cout << "Running servers: waiting for connections..." << std::endl;
+	std::cout << BLUE "Running servers: waiting for connections..." RESET << std::endl << std::endl;
 
 	while (1)
 	{
@@ -69,7 +69,7 @@ void ConnectionManager::runServers()
 					std::cerr << "Accept failed: " << strerror(errno) << std::endl;
 					exit(EXIT_FAILURE);
 				}
-				std::cout << "New connection, socket fd is " << new_socket << std::endl;
+				// std::cout << "New connection, socket fd is " << new_socket << std::endl;
 				FD_SET(new_socket, &this->_read_sockets);
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
@@ -119,8 +119,7 @@ void ConnectionManager::runServers()
 					// Now we pass the buffer to the request handler and check if the request is complete
 					if (client->getRequest()->parseRequest(buffer_str))
 					{
-						std::cout << std::endl;
-						std::cout << "-----Received complete HTTP Request: " << std::endl;
+						std::cout << MAGENTA "-----Received complete HTTP Request: " RESET << std::endl;
 						std::cout << *(client->getRequest()) << std::endl;
 
 						FD_CLR(i, &this->_read_sockets);
@@ -139,10 +138,8 @@ void ConnectionManager::runServers()
 				}
 				client->setResponse(new Response(client, client->getRequest()));
 
-				const char* response = client->getResponse()->getHttpResponse().c_str();
-				std::cout << "Response: " << std::endl << response << std::endl;
-
-				ssize_t bytesSent = send(i, response, strlen(response), 0);
+				std::cout << MAGENTA "-----HTTP Response: " RESET << std::endl << *(client->getResponse()) << std::endl;
+				ssize_t bytesSent = send(i, client->getResponse()->getHttpResponse().c_str(), client->getResponse()->getHttpResponse().length(), 0);
 				if (bytesSent == -1)
 				{
 					std::cerr << "send error: " << strerror(errno) << std::endl;

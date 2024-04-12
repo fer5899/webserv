@@ -307,7 +307,6 @@ std::ostream& operator<<(std::ostream& os, const Request& Request)
 			os << Request.getBody() << std::endl;
 		}
 	}
-	os << "--------------------------------" << std::endl;
 	return os;
 }
 

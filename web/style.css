@@ -9,6 +9,10 @@ body {
 	flex-direction: column;
 }
 
+#fileList li {
+	margin-bottom: 10px;
+}
+
 .container {
 	text-align: center;
 	color: #333; /* Color del texto */

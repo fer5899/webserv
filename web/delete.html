@@ -8,11 +8,9 @@
 </head>
 <body>
 	<div class="container">
-		<h1>DELETE Request</h1>
+		<h1>File Management</h1>
 		<p>Files in Upload Directory:</p>
-		<ul id="fileList"  style="text-align: left;"></ul>
-			<!-- File list will be dynamically populated here -->
-		</ul>
+		<ul id="fileList" style="text-align: left;"></ul>
 	</div>
 	<footer>
 		<p>By alvgomez &amp;&amp; fgomez-d &amp;&amp; javiersa</p>
@@ -51,8 +49,17 @@
 							deleteButton.addEventListener("click", function() {
 								deleteFile(this.getAttribute("data-filename"));
 							});
-							
+
+							var downloadButton = document.createElement("button");
+							downloadButton.textContent = "Download";
+							downloadButton.setAttribute("data-filename", fileName);
+							downloadButton.style.marginLeft = "10px"; // Add margin-right to the button
+							downloadButton.addEventListener("click", function() {
+								downloadFile(this.getAttribute("data-filename"));
+							});
+
 							listItem.appendChild(deleteButton);
+							listItem.appendChild(downloadButton);
 							fileListContainer.appendChild(listItem);
 						}
 					});
@@ -73,6 +80,24 @@
 				};
 				xhr.send();
 			}
+		}
+
+		function downloadFile(filename) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/upload/" + encodeURIComponent(filename), true);
+			xhr.responseType = "blob";
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var blob = xhr.response;
+					var link = document.createElement('a');
+					link.href = window.URL.createObjectURL(blob);
+					link.download = filename;
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+				}
+			};
+			xhr.send();
 		}
 	</script>
 </body>

@@ -60,6 +60,7 @@ void ConnectionManager::runServers()
 
 	this->initSets();
 	struct timeval timer;
+	std::cout << "Running servers: waiting for connections..." << std::endl;
 	
 	while (1)
 	{
@@ -86,6 +87,7 @@ void ConnectionManager::runServers()
 					std::cerr << "Accept failed: " << strerror(errno) << std::endl;
 					exit(EXIT_FAILURE);
 				}
+				std::cout << "New connection, socket fd is " << new_socket << std::endl;
 				FD_SET(new_socket, &this->_read_sockets);
 				if (new_socket > this->_max_socket)
 					this->_max_socket = new_socket;
@@ -120,6 +122,7 @@ void ConnectionManager::runServers()
 				}
 				else if (bytesRead == 0)
 				{
+					std::cout << "Socket: " << i << " bytesRead == 0, closing connection" << std::endl;
 					close(i);
 					FD_CLR(i, &this->_read_sockets);
 					client->clearRequest();
@@ -130,11 +133,13 @@ void ConnectionManager::runServers()
 					client->setLastReqTime();
 					buffer[bytesRead] = '\0';
 					std::string buffer_str(buffer);
+					// std::cout << buffer_str << std::endl;
 					
 					// Now we pass the buffer to the request handler and check if the request is complete
 					if (client->getRequest()->parseRequest(buffer_str))
 					{
-						std::cout << std::endl << MAGENTA "-----HTTP Request: " RESET<< std::endl;
+						std::cout << std::endl;
+						std::cout << "-----Received complete HTTP Request: " << std::endl;
 						std::cout << *(client->getRequest()) << std::endl;
 
 						FD_CLR(i, &this->_read_sockets);
@@ -154,10 +159,10 @@ void ConnectionManager::runServers()
 				}
 				client->setResponse(new Response(client, client->getRequest()));
 
-				std::cout << MAGENTA "-----HTTP Response: " RESET<< std::endl;
-				std::cout << *client->getResponse() << std::endl;
+				const char* response = client->getResponse()->getHttpResponse().c_str();
+				std::cout << "Response: " << std::endl << response << std::endl;
 
-				ssize_t bytesSent = send(i, client->getResponse()->getHttpResponse().c_str(), client->getResponse()->getHttpResponse().length(), 0);
+				ssize_t bytesSent = send(i, response, strlen(response), 0);
 				if (bytesSent == -1)
 				{
 					std::cerr << "send error: " << strerror(errno) << std::endl;
@@ -177,22 +182,27 @@ void ConnectionManager::runServers()
 				}
 				else 
 				{
+					std::cout << "Data sent" << std::endl;
 					client->setLastReqTime();
 					if (client->getRequest()->keepAlive() && client->getResponse()->keepAlive())
 					{
+						std::cout << "Keep-Alive: true" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
 						FD_SET(i, &this->_read_sockets);
-						
+						client->clearRequest();
+						client->clearResponse();
 					}
 					else
 					{
+						std::cout << "Keep-Alive: false" << std::endl;
 						FD_CLR(i, &this->_write_sockets);
+						client->clearRequest();
+						client->clearResponse();
 						close(i);
 						this->removeClient(i);
-					}
-					client->clearRequest();
-					client->clearResponse();
-						
+						std::cout << "Connection closed" << std::endl;
+						std::cout << std::endl;
+					}	
 				}
 			}
 		}
@@ -283,12 +293,15 @@ void ConnectionManager::checkTimeouts()
 {
 	for(unsigned long i = 0; i < this->_clients.size(); i++)
 	{
+		// std::cout << "Time: " << time(NULL) - this->_clients[i].getLastReqTime() << ", time now: " << time(NULL) << ", last req time: " << this->_clients[i].getLastReqTime() << std::endl;
 		if (time(NULL) - this->_clients[i].getLastReqTime() > CONN_TIMEOUT)
 		{
+			std::cout << "Client: " << this->_clients[i].getSocket() << " timed out" << std::endl;
 			FD_CLR(this->_clients[i].getSocket(), &this->_read_sockets);
 			FD_CLR(this->_clients[i].getSocket(), &this->_write_sockets);
 			close(this->_clients[i].getSocket());
 			this->removeClient(this->_clients[i].getSocket());
+			std::cout << std::endl;
 		}
 	}
 }

@@ -12,7 +12,6 @@ class ConnectionManager
 	public:
 		ConnectionManager();
 		ConnectionManager(Configuration &config);
-		ConnectionManager(std::vector<Server> servers);
 		~ConnectionManager();
 	
 		void setUpServers();
@@ -25,7 +24,7 @@ class ConnectionManager
 	
 	private:
 		std::vector<Client> _clients;
-		std::vector<Server> _servers;
+		std::vector<std::vector<Server> > _servers;
 		int _count;
 		fd_set _read_sockets, _write_sockets;
 	
@@ -34,7 +33,7 @@ class ConnectionManager
 		void addServer(Server &server);
 		void addClient(Client &client);
 		void removeClient(int socket);
-		Server *getServerBySocket(int socket);
+		std::vector<Server> *getServerVectorBySocket(int socket);
 		void checkTimeouts();
 };
 

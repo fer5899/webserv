@@ -1,8 +1,10 @@
 #include "../include/Client.hpp"
 
 
-Client::Client(Server *server, int socket) : _socket(socket), _server(server)
+Client::Client(std::vector<Server> *server_vector, int socket)
 {
+	_socket = socket;
+	_server_vector = server_vector;
 	_request = NULL;
 	_response = NULL;
 	_last_req_time = time(NULL);
@@ -17,7 +19,7 @@ Client::Client(const Client &other)
 Client &Client::operator=(const Client &other)
 {
 	_socket = other._socket;
-	_server = other._server;
+	_server_vector = other._server_vector;
 	_request = other._request;
 	_response = other._response;
 	_last_req_time = other._last_req_time;
@@ -47,9 +49,19 @@ int			Client::getSocket() const
 	return _socket;
 }
 
-Server		*Client::getServer()
+Server		*Client::getServer(std::string server_name)
 {
-	return _server;
+	for (std::vector<Server>::iterator it = _server_vector->begin(); it != _server_vector->end(); it++)
+	{
+		if (it->getServerName() == server_name)
+			return &(*it);
+	}
+	return &(*(_server_vector->begin()));
+}
+
+std::vector<Server>	*Client::getServerVector()
+{
+	return _server_vector;
 }
 
 void		Client::setRequest(Request *request)

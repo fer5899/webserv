@@ -1,7 +1,10 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include "Server.hpp"
 #include "common.hpp"
+
+class Server;
 
 class Request
 {
@@ -13,6 +16,7 @@ class Request
 		std::map<std::string, std::string>	_headers;
 		std::string							_body;
 		int									_errorCode;
+		std::vector<Server> 				*_server_vector;
 
 		std::map<std::string, std::string>	_query_params;
 
@@ -28,10 +32,11 @@ class Request
 		bool								parseBodyRequisites();
 		bool								parseBody(std::string& line);
 		bool								parseBodyChunked(std::string line);
+		size_t								getMaxBodySize();
 
 	public:
 		Request();
-		Request(size_t maxBodySize);
+		Request(std::vector<Server> *server_vector);
 		~Request();
 		Request(const Request& other);
 		Request& operator=(const Request& other);
@@ -44,6 +49,7 @@ class Request
 		bool								keepAlive() const;
 		int									getErrorCode() const;
 		void								setErrorCode(int errorCode);
+		std::string							getHostname() const;
 		std::map<std::string, std::string>	getQueryParams() const;
 
 		bool 								parseRequest(std::string request);

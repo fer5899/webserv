@@ -66,8 +66,8 @@ std::vector<std::string> Response::getCGIEnv()
 	envStrings.push_back("SCRIPT_NAME=" + getCGICmd());
 	envStrings.push_back("PATH_INFO=" + _request->getPath());
 	envStrings.push_back("PATH_TRANSLATED=" + buildFilesystemPath(_request->getPath()));
-	envStrings.push_back("SERVER_NAME=" + _client->getServer()->getServerName());
-	envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer()->getPort()));
+	envStrings.push_back("SERVER_NAME=" + _client->getServer(_request->getHostname())->getServerName());
+	envStrings.push_back("SERVER_PORT=" + numberToString(_client->getServer(_request->getHostname())->getPort()));
 	envStrings.push_back("SERVER_SOFTWARE=Webserv42");
 	envStrings.push_back("BODY=" + _request->getBody());
 
@@ -216,7 +216,7 @@ std::string	&Response::getHttpResponse()
 
 Location	*Response::matchLocation()
 {
-	Server	*server = _client->getServer();
+	Server	*server = _client->getServer(_request->getHostname());
 	std::vector<Location>		locations = server->getLocations();
 	if (locations.size() == 0)
 		return (NULL);
@@ -227,13 +227,13 @@ Location	*Response::matchLocation()
 
 	for (size_t i = 0; i < locations.size(); i++)
 	{
-		loc_path = _client->getServer()->getLocation(i).getPath();
+		loc_path = _client->getServer(_request->getHostname())->getLocation(i).getPath();
 		if (loc_path.size() <= req_path.size())
 		{
 			if (req_path.compare(0, loc_path.size(), loc_path) == 0
 				&& loc_path.size() > max_loc_size)
 			{
-				matched_loc = &(_client->getServer()->getLocation(i));
+				matched_loc = &(_client->getServer(_request->getHostname())->getLocation(i));
 				max_loc_size = loc_path.size();
 			}
 		}
@@ -308,7 +308,7 @@ void	Response::setDateServer()
 	strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
 	std::string date = std::string(buffer);
 
-	_headers_str.append("Server: " + _client->getServer()->getServerName() + "\r\n");
+	_headers_str.append("Server: " + _client->getServer(_request->getHostname())->getServerName() + "\r\n");
 	_headers_str.append("Date: " + date + "\r\n");
 }
 
@@ -326,19 +326,19 @@ void	Response::setCookies()
 	try
 	{
 		std::string cookies = _request->getHeaders().at("Cookie");
-		if (cookies.find("first_visit_" + _client->getServer()->getServerName()) == std::string::npos)
+		if (cookies.find("first_visit_" + _client->getServer(_request->getHostname())->getServerName()) == std::string::npos)
 		{
 			_headers_str.append("Set-Cookie: first_visit_" 
-				+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+				+ _client->getServer(_request->getHostname())->getServerName() + "=" + date + "\r\n");
 		}
 	}
 	catch(const std::out_of_range& e)
 	{
 		_headers_str.append("Set-Cookie: first_visit_" 
-			+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+			+ _client->getServer(_request->getHostname())->getServerName() + "=" + date + "\r\n");
 	}
 	_headers_str.append("Set-Cookie: last_visit_" 
-		+ _client->getServer()->getServerName() + "=" + date + "\r\n");
+		+ _client->getServer(_request->getHostname())->getServerName() + "=" + date + "\r\n");
 }
 
 void	Response::setContentType(std::string filesys_path)
@@ -445,7 +445,7 @@ void	Response::setErrorResponse(int errorCode)
 	// Get error page from default error pages
 	try
 	{
-		std::string error_page_path = _client->getServer()->getDefError().at(errorCode);
+		std::string error_page_path = _client->getServer(_request->getHostname())->getDefError().at(errorCode);
 		struct stat fileStat;
 		if (stat(error_page_path.c_str(), &fileStat) == 0)
 		{

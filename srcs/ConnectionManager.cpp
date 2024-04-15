@@ -47,6 +47,7 @@ void ConnectionManager::runServers()
 	while (1)
 	{
 		timer.tv_sec = 1;
+		timer.tv_usec = 1;
 		read_sockets_copy = this->_read_sockets;
 		write_sockets_copy = this->_write_sockets;
 		
